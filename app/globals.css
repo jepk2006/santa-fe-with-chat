@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .wrapper {
+    @apply max-w-7xl lg:mx-auto p-5 md:px-10 w-full;
+  }
+
+  .flex-start {
+    @apply flex justify-start items-center;
+  }
+  .flex-center {
+    @apply flex justify-center items-center;
+  }
+
+  .flex-between {
+    @apply flex justify-between items-center;
+  }
+
+  .h1-bold {
+    @apply font-bold text-3xl lg:text-4xl tracking-tight;
+  }
+
+  .h2-bold {
+    @apply font-bold text-2xl lg:text-3xl tracking-tight;
+  }
+
+  .h3-bold {
+    @apply font-bold text-xl lg:text-2xl tracking-tight;
+  }
+  
+  /* Enhanced typographic scale */
+  .display-large {
+    @apply font-bold text-5xl lg:text-6xl tracking-tight leading-tight;
+  }
+  
+  .display-medium {
+    @apply font-bold text-4xl lg:text-5xl tracking-tight leading-tight;
+  }
+  
+  /* Transitions */
+  .smooth-transition {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  /* Spacing utilities */
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-24;
+  }
+  
+  .content-container {
+    @apply max-w-2xl mx-auto;
+  }
+}
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 225 25% 20%;
+    
+    /* Card and containers */
+    --card: 0 0% 100%;
+    --card-foreground: 225 25% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 25% 20%;
+    
+    /* Primary brand colors - meatpacking industry inspired */
+    --primary: 358 75% 50%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Secondary colors */
+    --secondary: 220 20% 97%;
+    --secondary-foreground: 225 25% 25%;
+    
+    /* Muted elements */
+    --muted: 220 20% 97%;
+    --muted-foreground: 220 10% 45%;
+    
+    /* Accent colors */
+    --accent: 358 75% 97%;
+    --accent-foreground: 358 75% 50%;
+    
+    /* System colors */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* UI elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 358 75% 50%;
+    
+    /* Chart colors */
+    --chart-1: 358 75% 50%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    
+    /* Border radius */
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+  }
+  
+  a {
+    @apply transition-all duration-300 ease-in-out;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight font-bold;
+  }
+  
+  button, a {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+  
+  /* Improved focus states for accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Subtle animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-up {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-down {
+  opacity: 0;
+  transform: translateY(-30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.reveal.visible,
+.reveal-up.visible,
+.reveal-down.visible,
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* Improved scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* Page transition animations */
+.page-transition-enter {
+  opacity: 0;
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transition: opacity 250ms cubic-bezier(0.25, 0.1, 0.25, 1.0);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(0.25, 0.1, 0.25, 1.0);
+}
+
+/* Enhance all interactive elements */
+button, 
+.button,
+[role="button"],
+a {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+/* Remove the problematic sticky-card animation */
+.sticky-card {
+  display: none; /* Hide any elements with this class */
+}
+
+@keyframes sticky-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+} 
