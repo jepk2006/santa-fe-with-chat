@@ -3,7 +3,6 @@ import {
   getFeaturedProducts,
 } from '@/lib/actions/product.actions';
 import ViewAllProductsButton from '@/components/view-all-products-button';
-import DealCountdown from '@/components/deal-countdown';
 import Reveal from '@/components/ui/reveal';
 import ProductList from '@/components/shared/product/product-list';
 import FeaturedProductsScroll from '@/components/shared/featured-products-scroll';
@@ -71,28 +70,6 @@ const Homepage = async () => {
               <ViewAllProductsButton />
             </div>
           </Reveal>
-        </section>
-      </Reveal>
-      
-      {/* Deals Section */}
-      <Reveal>
-        <section className="bg-accent/50 py-12 mt-16">
-          <div className="wrapper">
-            <Reveal direction="up">
-              <div className="max-w-2xl mx-auto text-center mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold font-heading tracking-tight mb-4">
-                  Special Offers
-                </h2>
-                <p className="text-muted-foreground">
-                  Don't miss out on our limited-time deals
-                </p>
-              </div>
-            </Reveal>
-            
-            <Reveal direction="up" delay={200}>
-              <DealCountdown />
-            </Reveal>
-          </div>
         </section>
       </Reveal>
     </main>
