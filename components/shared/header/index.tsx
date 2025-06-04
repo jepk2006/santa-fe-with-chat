@@ -6,9 +6,10 @@ import { ShoppingCart, Search as SearchIcon } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-import { User, Session } from '@supabase/supabase-js';
+import { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
+import React from 'react';
+import { supabase } from '@/lib/supabase-client';
 
 const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
@@ -23,51 +24,64 @@ const Header = () => {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    
-    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
+    let ignore = false;
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      console.log('[HEADER] getUser() user:', user);
+      if (error) console.error('[HEADER] getUser() error:', error);
+      if (ignore) return;
+      setUser(user ?? null);
+      if (user) {
+        console.log('[HEADER] Querying users table with id:', user.id, 'email:', user.email);
+        supabase
+          .from('users')
+          .select('role, id, email')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: userRow, error: userError, status, statusText }) => {
+            console.log('[HEADER] users table response:', { userRow, userError, status, statusText });
+            if (userRow) {
+              console.log('[HEADER] userRow.id:', userRow.id, 'userRow.email:', userRow.email, 'userRow.role:', userRow.role);
+            }
+            setIsAdmin(userRow?.role === 'admin');
+            console.log('[HEADER] isAdmin:', userRow?.role === 'admin');
+          });
       } else {
         setIsAdmin(false);
+        console.log('[HEADER] No user, isAdmin set to false');
       }
     });
 
-    return () => subscription.unsubscribe();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      console.log('[HEADER] onAuthStateChange user:', user);
+      setUser(user);
+      if (user) {
+        console.log('[HEADER] Querying users table with id:', user.id, 'email:', user.email);
+        supabase
+          .from('users')
+          .select('role, id, email')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: userRow, error: userError, status, statusText }) => {
+            console.log('[HEADER] users table response:', { userRow, userError, status, statusText });
+            if (userRow) {
+              console.log('[HEADER] userRow.id:', userRow.id, 'userRow.email:', userRow.email, 'userRow.role:', userRow.role);
+            }
+            setIsAdmin(userRow?.role === 'admin');
+            console.log('[HEADER] isAdmin:', userRow?.role === 'admin');
+          });
+      } else {
+        setIsAdmin(false);
+        console.log('[HEADER] No user, isAdmin set to false');
+      }
+    });
+    return () => {
+      ignore = true;
+      subscription.unsubscribe();
+    };
   }, []);
-
-  const checkAdminStatus = async (userId: string) => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) return;
-
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .single();
-    
-    setIsAdmin(profile?.role === 'admin');
-  };
 
   const isActive = (path: string) => pathname === path;
 
@@ -79,8 +93,8 @@ const Header = () => {
           <Image
             src="/images/logo.png"
             alt="Logo"
-            width={80}
-            height={80}
+            width={160}
+            height={160}
             className="object-contain w-20 h-20"
             priority
           />
@@ -89,32 +103,37 @@ const Header = () => {
         {/* Centered Navigation */}
         <nav className="flex-1 flex justify-center">
           <ul className="flex gap-8">
-            {NAV_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className={cn(
-                    'text-base font-semibold transition-colors hover:text-black',
-                    isActive(link.href) ? 'text-black' : 'text-neutral-600'
+            {NAV_LINKS.map((link, idx) => {
+              const isMisPedidos = link.label === 'Mis Pedidos';
+              return (
+                <React.Fragment key={link.href}>
+                  <li>
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        'text-base font-semibold transition-colors hover:text-black',
+                        isActive(link.href) ? 'text-black' : 'text-neutral-600'
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                  {isMisPedidos && isAdmin && (
+                    <li key="admin-overview">
+                      <Link
+                        href="/admin/overview"
+                        className={cn(
+                          'text-base font-semibold transition-colors hover:text-black',
+                          isActive('/admin/overview') ? 'text-black' : 'text-neutral-600'
+                        )}
+                      >
+                        Administración
+                      </Link>
+                    </li>
                   )}
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {isAdmin && (
-              <li>
-                <Link
-                  href="/admin"
-                  className={cn(
-                    'text-base font-semibold transition-colors hover:text-black',
-                    isActive('/admin') ? 'text-black' : 'text-neutral-600'
-                  )}
-                >
-                  Administración
-                </Link>
-              </li>
-            )}
+                </React.Fragment>
+              );
+            })}
           </ul>
         </nav>
 
