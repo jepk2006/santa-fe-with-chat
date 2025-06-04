@@ -6,8 +6,9 @@ import { ShoppingCart, Search as SearchIcon } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 
 const NAV_LINKS = [
   { href: '/', label: 'Inicio' },
@@ -20,12 +21,53 @@ const Header = () => {
   const { items } = useCart();
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const pathname = usePathname();
-  const { data: session, status } = useSession();
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Session status:', status);
-    console.log('Session data:', session);
-  }, [session, status]);
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) return;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    
+    supabase.auth.getSession().then(({ data: { session } }: { data: { session: Session | null } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      }
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: string, session: Session | null) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseAnonKey) return;
+
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', userId)
+      .single();
+    
+    setIsAdmin(profile?.role === 'admin');
+  };
 
   const isActive = (path: string) => pathname === path;
 
@@ -60,7 +102,7 @@ const Header = () => {
                 </Link>
               </li>
             ))}
-            {status === 'authenticated' && (
+            {isAdmin && (
               <li>
                 <Link
                   href="/admin"

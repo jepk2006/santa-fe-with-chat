@@ -82,13 +82,14 @@ ${isRatingSet ? `: Rating ${rating}` : ''}`
 }
 
 export default async function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
+  const searchParamsObj = await Promise.resolve(searchParams);
   const {
     q = 'all',
     category = 'all',
     price = 'all',
     rating = 'all',
     page = '1',
-  } = searchParams;
+  } = searchParamsObj;
 
   /* ----- helper for link building ----- */
   const getFilterUrl = ({
