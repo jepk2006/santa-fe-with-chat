@@ -56,7 +56,7 @@ export function formatNumber(number: number) {
 
 // Shorten UUID
 export function formatId(id: string) {
-  return id.slice(0, 8);
+  return `ORD-${id.slice(0, 8)}`;
 }
 
 // Format date and times
