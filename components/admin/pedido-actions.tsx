@@ -284,6 +284,37 @@ async function updateDeliveryStatus(orderId: string, isDelivered: boolean) {
   }
 }
 
+// Function to update order status
+async function updateOrderStatus(orderId: string, status: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled') {
+  try {
+    console.log(`Updating order status to: ${status} for order: ${orderId}`);
+    
+    const response = await fetch('/api/orders/update-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        orderId,
+        status,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API error: ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log('API response:', result);
+    
+    return { success: true, data: result.data };
+  } catch (error) {
+    console.error('API error:', error);
+    return { success: false, message: error instanceof Error ? error.message : 'API request failed' };
+  }
+}
+
 export function PedidoActions({ pedido }: PedidoActionsProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -343,6 +374,7 @@ export function PedidoActions({ pedido }: PedidoActionsProps) {
 
   const isDelivered = pedido.is_delivered || pedido.status === 'delivered';
   const isPaid = pedido.is_paid || pedido.status === 'paid';
+  const isShipped = pedido.status === 'shipped';
 
   return (
     <DropdownMenu>
@@ -386,6 +418,20 @@ export function PedidoActions({ pedido }: PedidoActionsProps) {
             className="text-green-600 hover:!text-green-700 cursor-pointer"
           >
             <CreditCard className="mr-2 h-4 w-4" /> Mark as Paid
+          </DropdownMenuItem>
+        )}
+
+        {!isDelivered && isPaid && !isShipped && (
+          <DropdownMenuItem 
+            onClick={() => handleAction(
+              () => updateOrderStatus(pedido.id, 'shipped'), 
+              'Order marked as shipped.',
+              'Failed to update order status.'
+            )}
+            disabled={isPending || isUpdating}
+            className="text-blue-600 hover:!text-blue-700 cursor-pointer"
+          >
+            <Truck className="mr-2 h-4 w-4" /> Mark as Shipped
           </DropdownMenuItem>
         )}
         
