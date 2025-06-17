@@ -28,15 +28,16 @@ export default function SimilarProducts({
 
   // For fewer products, ensure they're centered and don't take excessive space
   const getContainerClass = () => {
-    if (displayedProducts.length <= 2) return "max-w-3xl mx-auto";
+    if (displayedProducts.length === 1) return "max-w-sm mx-auto";
+    if (displayedProducts.length <= 2) return "max-w-2xl mx-auto";
     return "";
   };
 
   // Determine grid columns based on number of products
   const getGridClass = () => {
     const count = displayedProducts.length;
-    if (count === 1) return "grid-cols-1";
-    if (count === 2) return "grid-cols-1 sm:grid-cols-2";
+    if (count === 1) return "grid-cols-1 place-items-center";
+    if (count === 2) return "grid-cols-1 sm:grid-cols-2 gap-6";
     if (count === 3) return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3";
     return "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4";
   };

@@ -61,7 +61,6 @@ export async function POST(request: Request) {
       .select();
     
     if (error) {
-      console.error('Error updating order status:', error);
       return NextResponse.json(
         { error: error.message },
         { status: 500 }
@@ -70,7 +69,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error('Error in update-status API:', error);
     return NextResponse.json(
       { error: 'Failed to update order status' },
       { status: 500 }

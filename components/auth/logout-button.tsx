@@ -13,16 +13,17 @@ export default function LogoutButton() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    router.push('/');
     router.refresh();
   };
 
   return (
     <Button 
       onClick={handleLogout}
-      variant='ghost' 
-      className='bg-transparent hover:bg-secondary text-xs text-muted-foreground'
+      variant='destructive' 
+      size='sm'
     >
-      Logout
+      Cerrar sesión
     </Button>
   );
 } 

@@ -73,6 +73,5 @@ export const handleCookieOperations = async (
       cookieStore.set(name, value, options);
     }
   } catch (error) {
-    console.error(`Error handling cookie operation for ${name}:`, error);
   }
 }; 

@@ -8,7 +8,6 @@ export async function GET() {
     // Ensure the user is an admin
     await requireAdmin();
     
-    console.log('Fetching orders from database via API');
     const { data, error } = await supabaseAdmin
       .from(SUPABASE_TABLES.ORDERS)
       .select(`
@@ -22,17 +21,14 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching pedidos:', error);
       return NextResponse.json(
         { error: 'Failed to fetch orders' },
         { status: 500 }
       );
     }
-    
-    console.log(`Found ${data?.length || 0} orders`);
+
     return NextResponse.json({ data });
   } catch (error) {
-    console.error('Error in orders API:', error);
     return NextResponse.json(
       { error: 'Failed to fetch orders' },
       { status: 500 }

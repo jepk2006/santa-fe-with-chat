@@ -8,8 +8,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import ProductImages from '@/components/shared/product/product-images';
 import { useRouter } from 'next/navigation';
-import ReviewList from './review-list';
-import Rating from '@/components/shared/product/rating';
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Scale, Package } from 'lucide-react';
@@ -31,7 +30,7 @@ export default function ProductDetails({ product, user }: ProductDetailsProps) {
   const minWeight = product.minWeight || product.min_weight;
   const isWeightBased = sellingMethod === 'weight';
   
-  const [weight, setWeight] = useState(minWeight || 1);
+  const [weight, setWeight] = useState(Number(minWeight) || 1);
   
   const handleAddToCart = () => {
     addItem({
@@ -57,17 +56,6 @@ export default function ProductDetails({ product, user }: ProductDetailsProps) {
     });
   };
 
-  console.log('Product details:', { 
-    sellingMethod, 
-    weightUnit, 
-    minWeight,
-    // Debug info - using correct property names
-    originalProps: {
-      sellingMethod, // local variable
-      selling_method: product.selling_method // correct property from API
-    }
-  });
-
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -88,12 +76,10 @@ export default function ProductDetails({ product, user }: ProductDetailsProps) {
                 </span>
               )}
             </div>
-            <div className="mt-2">
-              <Rating value={Number(product.rating)} />
-            </div>
+
             {/* Stock Status */}
             <div className="mt-2 flex items-center space-x-2">
-              <span className={`font-medium ${product.inStock ? "text-green-600" : "text-red-600"}`}>
+              <span className={`font-medium ${product.inStock ? "text-green-600" : "text-red-300"}`}>
                 {product.inStock ? "In Stock" : "Out of Stock"}
               </span>
               <span className="text-muted-foreground">•</span>
@@ -121,43 +107,52 @@ export default function ProductDetails({ product, user }: ProductDetailsProps) {
                 {isWeightBased ? (
                   <div className="space-y-3">
                     <Label htmlFor="weight">Select Weight ({weightUnit})</Label>
-                    <div className="flex items-center space-x-2">
-                      <Input
-                        id="weight"
-                        type="number"
-                        min={minWeight || 0.1}
-                        step={0.1}
-                        value={weight}
-                        onChange={(e) => setWeight(parseFloat(e.target.value))}
-                        onBlur={(e) => {
-                          if (!e.target.value || isNaN(parseFloat(e.target.value))) {
-                            setWeight(1);
-                          }
-                        }}
-                        className="w-24"
-                      />
-                      <span>{weightUnit}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <Input
+                          id="weight"
+                          type="number"
+                          min={Number(minWeight) || 0.1}
+                          step={0.1}
+                          value={isNaN(weight) ? '' : weight}
+                          onChange={(e) => {
+                            const newWeight = parseFloat(e.target.value);
+                            setWeight(isNaN(newWeight) ? 0 : newWeight);
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value || isNaN(parseFloat(e.target.value))) {
+                              setWeight(Number(minWeight) || 1);
+                            }
+                          }}
+                          className="w-24 border border-gray-300 bg-white"
+                        />
+                        <span className="text-sm font-medium text-gray-700">{weightUnit}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Total: {isNaN(weight) ? "-" : formatPrice(product.price * weight)}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Total: {isNaN(weight) ? "-" : formatPrice(product.price * weight)}
-                    </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <Label htmlFor="quantity">Quantity</Label>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center justify-center space-x-4 p-3 bg-white border border-gray-300 rounded-lg w-fit">
                       <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="h-8 w-8 bg-white border-gray-300 hover:bg-gray-100"
                       >
                         -
                       </Button>
-                      <span>{quantity}</span>
+                      <span className="text-lg font-semibold text-gray-900 min-w-[2rem] text-center">{quantity}</span>
                       <Button
                         type="button"
                         variant="outline"
+                        size="sm"
                         onClick={() => setQuantity(quantity + 1)}
+                        className="h-8 w-8 bg-white border-gray-300 hover:bg-gray-100"
                       >
                         +
                       </Button>
@@ -184,15 +179,7 @@ export default function ProductDetails({ product, user }: ProductDetailsProps) {
         </div>
       </div>
 
-      {/* Reviews Section */}
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
-        <ReviewList
-          userId={user?.id}
-          productId={product.id}
-          productSlug={product.slug}
-        />
-      </div>
+
     </div>
   );
 } 

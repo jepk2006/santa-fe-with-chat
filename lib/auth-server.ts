@@ -34,7 +34,6 @@ export async function getCurrentUser() {
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error || !user) {
-      console.error('Error getting auth user:', error);
       return null;
     }
 
@@ -46,12 +45,10 @@ export async function getCurrentUser() {
       .single();
 
     if (userError) {
-      console.error('Error fetching user data:', userError);
       return null;
     }
 
     if (!userData) {
-      console.error('No user data found for id:', user.id);
       return null;
     }
 
@@ -63,7 +60,6 @@ export async function getCurrentUser() {
       updated_at: user.updated_at,
     } as User;
   } catch (error) {
-    console.error('Error getting current user:', error);
     return null;
   }
 } 

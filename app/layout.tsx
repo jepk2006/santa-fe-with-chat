@@ -39,13 +39,13 @@ export default function RootLayout({
     <html lang='en' className={`${outfit.variable} ${inter.variable}`}>
       <body className={`${inter.className} antialiased min-h-screen`}>
         <AuthProvider>
-          <ThemeProvider>
-            <div className="animate-fade-in">
-              <HashRedirector />
-              {children}
-              <Toaster position="bottom-right" />
-            </div>
-          </ThemeProvider>
+        <ThemeProvider>
+          <div className="animate-fade-in">
+            <HashRedirector />
+            {children}
+            <Toaster position="bottom-right" />
+          </div>
+        </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

@@ -14,7 +14,6 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    console.log(`API: Updating payment for order ${orderId} to ${isPaid ? 'paid' : 'unpaid'}`);
     
     // First, fetch the current order to check status
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
       .single();
     
     if (fetchError) {
-      console.error('API: Error fetching order:', fetchError);
       return NextResponse.json({
         success: false,
         message: `Failed to fetch order: ${fetchError.message}`
@@ -60,7 +58,6 @@ export async function POST(request: Request) {
     }
     // Don't change status if unpaying a delivered/shipped order
     
-    console.log('API: Update data:', updateData);
     
     // Update with supabaseAdmin for full permissions
     const { data, error } = await supabaseAdmin
@@ -70,7 +67,6 @@ export async function POST(request: Request) {
       .select();
     
     if (error) {
-      console.error('API: Error updating payment status:', error);
       return NextResponse.json({
         success: false,
         message: `Failed to update payment status: ${error.message}`
@@ -83,7 +79,6 @@ export async function POST(request: Request) {
       data
     });
   } catch (error) {
-    console.error('API: Unexpected error:', error);
     return NextResponse.json({
       success: false,
       message: error instanceof Error ? error.message : 'Unexpected error occurred'

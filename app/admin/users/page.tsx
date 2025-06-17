@@ -27,9 +27,6 @@ const AdminUserPage = async () => {
 
   const { data: users } = await getAllUsers();
   
-  // Debug log to see the data structure
-  console.log('Users data:', JSON.stringify(users, null, 2));
-
   if (!users || users.length === 0) {
     return (
       <div className='space-y-4'>
@@ -67,22 +64,22 @@ const AdminUserPage = async () => {
               <TableHead>ID</TableHead>
               <TableHead>NAME</TableHead>
               <TableHead>EMAIL</TableHead>
+              <TableHead>PHONE</TableHead>
               <TableHead>ROLE</TableHead>
               <TableHead className="text-right">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user) => {
-              // Check each user object
-              console.log('User row:', user);
               return (
                 <TableRow key={user.id}>
-                  <TableCell>{formatId(user.id)}</TableCell>
+                  <TableCell>{user.id.substring(0, 8)}</TableCell>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.phone_number || 'N/A'}</TableCell>
                   <TableCell>
                     {user.role === 'ventas' ? (
-                      <Badge variant='outline' className="bg-blue-600 text-white border-blue-700 rounded-full px-3">Ventas</Badge>
+                      <Badge variant='outline' className="bg-brand-blue text-brand-white border-brand-blue rounded-full px-3">Ventas</Badge>
                     ) : (
                       <Badge variant='destructive'>Admin</Badge>
                     )}

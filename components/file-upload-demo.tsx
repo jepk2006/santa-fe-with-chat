@@ -9,12 +9,12 @@ export default function FileUploadDemo() {
   
   const handleFileUpload = (files: File[]) => {
     setFiles(files);
-    console.log(files);
+
   };
 
   const handleUploadComplete = (urls: string[]) => {
     setImageUrls(prev => [...prev, ...urls]);
-    console.log("Uploaded URLs:", urls);
+    
   };
 
   return (

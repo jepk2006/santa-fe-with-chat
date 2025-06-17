@@ -108,28 +108,32 @@ const Menu = ({ user, isAdminPage = false }: MenuProps) => {
             </SmoothLink>
           </Button>
         )}
-        <Button asChild variant='ghost' className="relative">
-          <SmoothLink href='/cart'>
-            <ShoppingCart />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                {itemCount}
-              </span>
-            )}
-          </SmoothLink>
-        </Button>
+        {!isAdminPage && (
+          <Button asChild variant='ghost' className="relative">
+            <SmoothLink href='/cart'>
+              <ShoppingCart />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                  {itemCount}
+                </span>
+              )}
+            </SmoothLink>
+          </Button>
+        )}
       </nav>
       <nav className='md:hidden flex items-center gap-2'>
-        <Button asChild variant='ghost' className="relative">
-          <SmoothLink href='/cart'>
-            <ShoppingCart />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
-                {itemCount}
-              </span>
-            )}
-          </SmoothLink>
-        </Button>
+        {!isAdminPage && (
+          <Button asChild variant='ghost' className="relative">
+            <SmoothLink href='/cart'>
+              <ShoppingCart />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full w-4 h-4 flex items-center justify-center text-[10px]">
+                  {itemCount}
+                </span>
+              )}
+            </SmoothLink>
+          </Button>
+        )}
         <Sheet>
           <SheetTrigger className='align-middle'>
             <MoreVertical />

@@ -31,25 +31,41 @@ export async function getMyCart() {
     handleSupabaseError(error);
   }
 
-  if (!cart) {
+  if (!cart || !cart.items || cart.items.length === 0) {
     return null;
   }
 
-  // Transform the items to match the frontend CartItem type
-  const transformedItems = cart.items.map((item: any) => ({
-    id: item.product_id,
-    name: item.name || 'Product',
-    price: item.price || 0,
-    image: item.image || '/placeholder.png',
-    quantity: item.quantity || 1,
-    selling_method: item.selling_method || 'unit',
-    weight_unit: item.weight_unit || null,
-    weight: item.weight || null
+  // Get all unique product IDs from the cart
+  const productIds = [...new Set(cart.items.map((item: any) => item.product_id).filter(Boolean))];
+
+  // Fetch all product details in a single query
+  const { data: products, error: productsError } = await supabase
+    .from(SUPABASE_TABLES.PRODUCTS)
+    .select('*')
+    .in('id', productIds);
+
+  if (productsError) {
+    handleSupabaseError(productsError);
+    // Return cart with items but without full product details as a fallback
+    return cart;
+  }
+
+  // Create a map for easy lookup
+  const productsMap = products.reduce((map, product) => {
+    map[product.id] = product;
+    return map;
+  }, {} as Record<string, any>);
+
+  // Enrich cart items with the full product object
+  const enrichedItems = cart.items.map((item: any) => ({
+    ...item,
+    product: productsMap[item.product_id],
   }));
 
   return {
     ...cart,
-    items: transformedItems
+    items: enrichedItems,
+    totalPrice: cart.total_price, // Ensure totalPrice is passed correctly
   };
 }
 
@@ -301,7 +317,6 @@ export async function saveCart(
   try {
     const supabase = await createServerSupabaseClient();
     
-    // Use getUser() for improved security instead of getSession()
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user) {
@@ -316,8 +331,7 @@ export async function saveCart(
       .single();
 
     if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Error fetching cart:', fetchError);
-      // Don't throw an error, just log it
+      handleSupabaseError(fetchError);
     }
 
     // Transform items to match database format
@@ -356,8 +370,7 @@ export async function saveCart(
         .eq('user_id', user.id);
 
       if (error) {
-        console.error('Error updating cart:', error);
-        // Don't throw, just log the error
+        handleSupabaseError(error);
       }
     } else {
       // Create new cart
@@ -366,15 +379,13 @@ export async function saveCart(
         .insert(cartData);
 
       if (error) {
-        console.error('Error creating cart:', error);
-        // Don't throw, just log the error
+        handleSupabaseError(error);
       }
     }
 
     revalidatePath('/cart');
   } catch (error) {
-    console.error('Error in saveCart:', error);
-    // Log but don't throw to prevent app crashes
+    throw error;
   }
 }
 
@@ -410,14 +421,12 @@ export async function updatePedidoStatus(
       .eq('id', pedidoId);
 
     if (error) {
-      console.error('Error updating pedido status:', error);
       return { success: false, message: error.message, error: error as AppError };
     }
 
     revalidatePath('/admin/pedidos');
     return { success: true, message: 'Pedido status updated successfully.' };
   } catch (e: any) {
-    console.error('Exception in updatePedidoStatus:', e);
     return { success: false, message: e.message || 'Failed to update pedido status.', error: e };
   }
 }
@@ -440,13 +449,11 @@ export async function markPedidoAsPaid(
       .eq('id', pedidoId);
 
     if (error) {
-      console.error('Error marking pedido as paid:', error);
       return { success: false, message: error.message, error: error as AppError };
     }
     revalidatePath('/admin/pedidos');
     return { success: true, message: `Pedido marked as ${isPaid ? 'paid' : 'unpaid'}.` };
   } catch (e: any) {
-    console.error('Exception in markPedidoAsPaid:', e);
     return { success: false, message: e.message || 'Failed to update payment status.', error: e };
   }
 }
@@ -475,13 +482,11 @@ export async function markPedidoAsDelivered(
       .eq('id', pedidoId);
 
     if (error) {
-      console.error('Error marking pedido as delivered:', error);
       return { success: false, message: error.message, error: error as AppError };
     }
     revalidatePath('/admin/pedidos');
     return { success: true, message: `Pedido marked as ${isDelivered ? 'delivered' : 'not delivered'}.` };
   } catch (e: any) {
-    console.error('Exception in markPedidoAsDelivered:', e);
     return { success: false, message: e.message || 'Failed to update delivery status.', error: e };
   }
 }
@@ -502,7 +507,6 @@ export async function getRecentCarts(limit = 5) {
     .limit(limit);
 
   if (error) {
-    console.error('Error fetching recent carts:', error);
     return [];
   }
 

@@ -42,7 +42,7 @@ interface OrderDetails {
 
 async function getOrderDetails(id: string): Promise<OrderDetails | null> {
   try {
-    console.log(`Fetching order with ID: ${id}`);
+
     
     // Fetch order from the orders table
     const { data: orderData, error } = await supabaseAdmin
@@ -59,16 +59,14 @@ async function getOrderDetails(id: string): Promise<OrderDetails | null> {
       .single();
 
     if (error) {
-      console.error(`Error fetching order details: ${JSON.stringify(error)}`);
       return null;
     }
 
     if (!orderData) {
-      console.error('No order data found');
       return null;
     }
 
-    console.log(`Order found: ${orderData.id}`);
+    
     
     // Format order data to match expected interface
     return {
@@ -76,7 +74,6 @@ async function getOrderDetails(id: string): Promise<OrderDetails | null> {
       order_items: orderData.order_items || [],
     };
   } catch (error) {
-    console.error(`Error in getOrderDetails: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     return null;
   }
 }
@@ -97,15 +94,15 @@ export default async function EditOrderPage({ params }: PageProps) {
     const id = resolvedParams.id;
     
     if (!id) {
-      console.log("No ID provided");
+  
       return notFound();
     }
     
-    console.log(`Attempting to fetch order: ${id}`);
+
     const orderDetails = await getOrderDetails(id);
     
     if (!orderDetails) {
-      console.log(`Order not found with ID: ${id}`);
+
       return notFound();
     }
 
@@ -134,7 +131,6 @@ export default async function EditOrderPage({ params }: PageProps) {
       </div>
     );
   } catch (error) {
-    console.error(`Error in EditOrderPage: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     return (
       <div className='space-y-6'>
         <div className='flex items-center justify-between'>

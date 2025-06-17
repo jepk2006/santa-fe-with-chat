@@ -43,14 +43,14 @@ const ProductCard = ({ product }: { product: Product }) => {
               />
               {!product.inStock && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <Badge variant="outline" className="absolute top-2 right-2 bg-red-500 text-white border-none">
+                  <Badge variant="outline" className="absolute top-2 right-2 bg-brand-red text-white border-none">
                     Out of Stock
                   </Badge>
                 </div>
               )}
               {product.isFeatured && (
                 <CardItem translateZ="100" rotateX={-5} rotateY={10} className="absolute top-2 left-2">
-                  <Badge variant="outline" className="bg-blue-500 text-white border-none shadow-lg">
+                  <Badge variant="outline" className="bg-brand-blue text-white border-none shadow-lg">
                     Featured
                   </Badge>
                 </CardItem>
@@ -60,7 +60,7 @@ const ProductCard = ({ product }: { product: Product }) => {
               {product.category && (
                 <CardItem translateZ="120" rotateX={10} rotateY={-15} className="absolute top-2 right-2">
                   <Badge 
-                    className="bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
+                    className="bg-brand-red text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg"
                   >
                     {product.category}
                   </Badge>
@@ -68,7 +68,7 @@ const ProductCard = ({ product }: { product: Product }) => {
               )}
             </CardItem>
             <CardItem translateZ="50" className="w-full">
-              <CardContent className='p-5 grid gap-3 w-full'>
+              <CardContent className='p-4 sm:p-5 xl:p-6 2xl:p-7 grid gap-3 xl:gap-4 w-full'>
                 <div className='flex justify-between items-start'>
                   <div className='space-y-1 flex-1'>
                     {(product.brand && product.brand !== 'Frigorifico Santa Fe') && (
@@ -77,7 +77,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                       </CardItem>
                     )}
                     <CardItem translateZ="75" className="w-full">
-                      <h2 className={`font-medium line-clamp-2 font-heading group-hover:text-primary transition-colors ${!(product.brand && product.brand !== 'Frigorifico Santa Fe') ? 'text-xl' : 'text-lg'}`}>{product.name}</h2>
+                      <h2 className={`font-medium line-clamp-2 font-heading group-hover:text-primary transition-colors ${!(product.brand && product.brand !== 'Frigorifico Santa Fe') ? 'text-lg xl:text-xl 2xl:text-2xl' : 'text-base xl:text-lg 2xl:text-xl'}`}>{product.name}</h2>
                     </CardItem>
                   </div>
                   <CardItem translateZ="60" rotateY={-5} className="flex flex-col items-end gap-1">
@@ -85,11 +85,11 @@ const ProductCard = ({ product }: { product: Product }) => {
                       <ProductPrice 
                         value={Number(product.price)} 
                         weightUnit={sellingMethod === 'weight' ? weightUnit : undefined} 
-                        className="text-right font-bold" 
+                        className="text-right font-bold xl:text-lg 2xl:text-xl" 
                       />
                     )}
                     {sellingMethod && (
-                      <div className="flex items-center text-xs text-muted-foreground">
+                      <div className="flex items-center text-xs xl:text-sm text-muted-foreground">
                         {sellingMethod === 'weight' ? (
                           <>
                             <Scale className="h-3 w-3 mr-1" />
@@ -107,7 +107,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                 </div>
                 
                 <CardItem translateZ="40" className="w-full">
-                  <div className='text-sm text-muted-foreground'>
+                  <div className='text-sm xl:text-base text-muted-foreground'>
                     {product.description && (
                       <p className="line-clamp-2">
                         {product.description.substring(0, 70) + (product.description.length > 70 ? '...' : '')}

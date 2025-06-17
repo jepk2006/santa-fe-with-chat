@@ -4,7 +4,7 @@
 
 @layer utilities {
   .wrapper {
-    @apply max-w-7xl lg:mx-auto p-5 md:px-10 w-full;
+    @apply max-w-7xl lg:mx-auto px-4 py-4 sm:px-5 sm:py-5 md:px-8 md:py-6 lg:px-10 lg:py-8 w-full;
   }
 
   .flex-start {
@@ -19,15 +19,15 @@
   }
 
   .h1-bold {
-    @apply font-bold text-3xl lg:text-4xl tracking-tight;
+    @apply font-bold text-2xl sm:text-3xl lg:text-4xl tracking-tight;
   }
 
   .h2-bold {
-    @apply font-bold text-2xl lg:text-3xl tracking-tight;
+    @apply font-bold text-xl sm:text-2xl lg:text-3xl tracking-tight;
   }
 
   .h3-bold {
-    @apply font-bold text-xl lg:text-2xl tracking-tight;
+    @apply font-bold text-lg sm:text-xl lg:text-2xl tracking-tight;
   }
   
   /* Enhanced typographic scale */
@@ -52,53 +52,119 @@
   .content-container {
     @apply max-w-2xl mx-auto;
   }
+
+  /* Nike-style heading for product names */
+  .heading-product {
+    @apply text-base md:text-lg font-semibold text-neutral-900 leading-tight;
+  }
+
+  /* Muted meta line (category, colors) */
+  .meta-text {
+    @apply text-note text-neutral-500 tracking-tight;
+  }
+
+  /* Price text */
+  .price-text {
+    @apply text-base font-semibold text-neutral-900;
+  }
+
+  /* Responsive grid that mimics Nike card gutters */
+  .product-grid {
+    @apply grid gap-y-8 gap-x-4 sm:gap-y-10 sm:gap-x-5 md:gap-y-12 md:gap-x-6 lg:gap-x-8 xl:gap-x-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4;
+  }
+
+  /* Mobile-first responsive utilities */
+  .mobile-padding {
+    @apply px-4 sm:px-6 md:px-8 lg:px-10;
+  }
+
+  .mobile-text {
+    @apply text-sm sm:text-base;
+  }
+
+  .mobile-heading {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
 }
 
 @layer base {
   :root {
-    /* Base colors */
-    --background: 0 0% 100%;
-    --foreground: 225 25% 20%;
+    /* ─── Primary Brand ───────────────────────────────────────── */
+    --brand-red:      #E00109; /* Primary CTA, highlights */
+    --brand-blue:     #001580; /* Headers, links, accents */
+    --brand-white:    #FFFFFF; /* Backgrounds, inverted text */
+
+    /* ─── Blue Tints & Shades ───────────────────────────────── */
+    --blue-50:        #F0F4FF; /* Very light backgrounds, sections */
+    --blue-100:       #D6E4FF; /* Hover bg on cards & modals */
+    --blue-200:       #ADC8FF; /* Secondary buttons, badges */
+    --blue-300:       #84A9FF; /* Success states, link hover */
+    --blue-400:       #6690FF; /* Icons, small accents */
+    --blue-500:       #3366CC; /* Button hover, deep accents */
+    --blue-dark:      #000F3A; /* Text on light-blue BG */
+
+    /* ─── Red Tints & Shades ────────────────────────────────── */
+    --red-100:        #FFC2C5; /* Error bg for alerts/cards */
+    --red-200:        #FF8A8F; /* Warning badges */
+    --red-300:        #FF4F56; /* Error accents (borders, icons) */
+    --red-400:        #E00109; /* == --brand-red (active errors) */
+    --red-dark:       #990007; /* Text on light-red BG */
+
+    /* ─── Neutral Grays ─────────────────────────────────────── */
+    --gray-100:       #F5F5F5; /* Page & section backgrounds */
+    --gray-200:       #E1E1E1; /* Dividers, form borders */
+    --gray-300:       #C8C8C8; /* Secondary borders, disabled bg */
+    --gray-400:       #A0A0A0; /* Disabled text */
+    --gray-500:       #707070; /* Secondary text */
+    --gray-600:       #404040; /* Body text, subheadings */
+    --gray-700:       #202020; /* Primary text */
+
+    /* ─── Semantic Aliases ──────────────────────────────────── */
+    --text-primary:   var(--gray-700);
+    --text-secondary: var(--gray-500);
+    --text-inverse:   var(--brand-white);
+
+    --color-background: var(--brand-white);
+    --color-surface:    var(--brand-white);
+    --color-border:     var(--gray-200);
+    --color-accent:     var(--brand-blue);
+    --color-error:      var(--red-300);
+    --color-success:    var(--blue-300);
     
-    /* Card and containers */
-    --card: 0 0% 100%;
-    --card-foreground: 225 25% 20%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 225 25% 20%;
+    /* ─── HSL Mappings for shadcn/ui ─────────────────────────── */
+    --background: 0 0% 100%;         /* brand-white */
+    --foreground: 0 0% 13%;          /* gray-700 */
     
-    /* Primary brand colors - meatpacking industry inspired */
-    --primary: 358 75% 50%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;               /* brand-white */
+    --card-foreground: 0 0% 13%;     /* gray-700 */
+    --popover: 0 0% 100%;            /* brand-white */
+    --popover-foreground: 0 0% 13%;  /* gray-700 */
     
-    /* Secondary colors */
-    --secondary: 220 20% 97%;
-    --secondary-foreground: 225 25% 25%;
+    --primary: 350 98% 44%;          /* brand-red */
+    --primary-foreground: 0 0% 100%; /* brand-white */
     
-    /* Muted elements */
-    --muted: 220 20% 97%;
-    --muted-foreground: 220 10% 45%;
+    --secondary: 228 100% 25%;       /* brand-blue */
+    --secondary-foreground: 0 0% 100%; /* brand-white */
     
-    /* Accent colors */
-    --accent: 358 75% 97%;
-    --accent-foreground: 358 75% 50%;
+    --muted: 0 0% 100%;              /* brand-white */
+    --muted-foreground: 0 0% 44%;    /* gray-500 */
     
-    /* System colors */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --accent: 228 100% 25%;          /* brand-blue */
+    --accent-foreground: 0 0% 100%;  /* brand-white */
     
-    /* UI elements */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 358 75% 50%;
+    --destructive: 350 98% 44%;      /* brand-red */
+    --destructive-foreground: 0 0% 100%; /* brand-white */
     
-    /* Chart colors */
-    --chart-1: 358 75% 50%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --border: 0 0% 88%;              /* gray-200 */
+    --input: 0 0% 100%;              /* brand-white */
+    --ring: 350 98% 44%;             /* brand-red */
     
-    /* Border radius */
+    --chart-1: 350 98% 44%;          /* brand-red */
+    --chart-2: 228 100% 25%;         /* brand-blue */
+    --chart-3: 215 100% 52%;         /* blue-300 */
+    --chart-4: 0 0% 44%;             /* gray-500 */
+    --chart-5: 0 0% 78%;             /* gray-300 */
+    
     --radius: 0.5rem;
   }
 }
@@ -110,10 +176,14 @@
   
   html {
     @apply scroll-smooth;
+    /* Better touch scrolling on iOS */
+    -webkit-overflow-scrolling: touch;
   }
   
   body {
     @apply bg-background text-foreground;
+    /* Prevent horizontal scrolling on mobile */
+    overflow-x: hidden;
   }
   
   a {
@@ -249,6 +319,21 @@ a {
     opacity: 0;
   }
   to {
-    opacity: 0;
+    opacity: 1;
   }
+}
+
+.phone-input .PhoneInputInput {
+  border: none;
+  background-color: transparent;
+  outline: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  font-size: inherit;
+}
+.phone-input .PhoneInputCountry {
+  margin-right: 0.5rem;
+  align-items: center;
+  display: flex;
 } 

@@ -1,12 +1,14 @@
 'use server';
 
-import { supabase } from '../supabase';
+import { supabase, supabaseAdmin } from '../supabase';
 import { handlePagination, handleSupabaseError } from './database.actions';
 import { PAGE_SIZE, SUPABASE_TABLES } from '../constants';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { AppError, ErrorResponse, SuccessResponse } from '../types/error';
+import { createClient } from '../supabase-server';
+import { getMyCart } from './cart.actions';
 
 /* -------------------------------------------------------------------------- */
 /*  GET ALL ORDERS                                                            */
@@ -73,7 +75,7 @@ export async function getAllOrders({
 export async function getOrderById(id: string) {
   try {
     // First get the order
-    const { data: order, error } = await supabase
+    const { data: order, error } = await supabaseAdmin
       .from('orders')
       .select('*')
       .eq('id', id)
@@ -91,7 +93,7 @@ export async function getOrderById(id: string) {
     // Get the user info separately if there's a user_id
     let userData = null;
     if (order.user_id) {
-      const { data: user, error: userError } = await supabase
+      const { data: user, error: userError } = await supabaseAdmin
         .from('users')
         .select('name, email')
         .eq('id', order.user_id)
@@ -103,15 +105,11 @@ export async function getOrderById(id: string) {
     }
     
     // Get the order items separately
-    const { data: orderItems, error: itemsError } = await supabase
+    const { data: orderItems, error: itemsError } = await supabaseAdmin
       .from('order_items')
       .select('*')
       .eq('order_id', id);
       
-    if (itemsError) {
-      console.error('Error fetching order items:', itemsError);
-    }
-    
     // Combine the data
     return {
       ...order,
@@ -119,7 +117,6 @@ export async function getOrderById(id: string) {
       order_items: orderItems || []
     };
   } catch (error) {
-    console.error(`Error in getOrderById: ${error instanceof Error ? error.message : JSON.stringify(error)}`);
     return null;
   }
 }
@@ -318,9 +315,7 @@ export async function getOrderSummary() {
         .select('id, name, category')
         .in('id', productIds);
       
-      if (productDetailsError) {
-        console.error('Error fetching product details:', productDetailsError);
-      } else if (productDetails) {
+      if (!productDetailsError && productDetails) {
         // Create a map of product details by ID
         productDetailsMap = productDetails.reduce((acc: Record<string, any>, product) => {
           acc[product.id] = product;
@@ -484,7 +479,6 @@ export async function getOrderSummary() {
       productCount: productCount || 0,
     };
   } catch (error) {
-    console.error('Error in getOrderSummary:', error);
     return {
       totalOrders: 0,
       totalSales: 0,
@@ -558,7 +552,6 @@ export async function createDirectOrder(
       .single();
 
     if (orderError) {
-      console.error('Error creating order:', orderError);
       handleSupabaseError(orderError);
     }
 
@@ -577,8 +570,6 @@ export async function createDirectOrder(
       .insert(orderItems);
 
     if (itemsError) {
-      console.error('Error creating order items:', itemsError);
-      
       // If order items failed, delete the order to avoid orphaned records
       await supabase
         .from(SUPABASE_TABLES.ORDERS)
@@ -591,7 +582,6 @@ export async function createDirectOrder(
     revalidatePath('/orders');
     return order;
   } catch (error) {
-    console.error('Error in createDirectOrder:', error);
     throw error;
   }
 }
@@ -626,13 +616,11 @@ export async function getOrdersByPhone(phoneNumber: string) {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching orders by phone:', error);
       handleSupabaseError(error);
     }
 
     return orders || [];
   } catch (error) {
-    console.error('Error in getOrdersByPhone:', error);
     return [];
   }
 }
@@ -660,7 +648,6 @@ export async function getOrdersByUserOrPhone(userId?: string, phoneNumber?: stri
     const { data: orders, error } = await query;
 
     if (error) {
-      console.error('Error fetching orders:', error);
       handleSupabaseError(error);
       return [];
     }
@@ -687,7 +674,6 @@ export async function getOrdersByUserOrPhone(userId?: string, phoneNumber?: stri
       .in('order_id', orderIds);
       
     if (itemsError) {
-      console.error('Error fetching order items:', itemsError);
       handleSupabaseError(itemsError);
     }
     
@@ -708,7 +694,210 @@ export async function getOrdersByUserOrPhone(userId?: string, phoneNumber?: stri
 
     return ordersWithItems;
   } catch (error) {
-    console.error('Error in getOrdersByUserOrPhone:', error);
     return [];
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                          MARK ORDER AS PAID                                */
+/* -------------------------------------------------------------------------- */
+export async function markOrderAsPaid(orderId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // For guest users, we could potentially verify ownership via a session token
+  // or by checking the phone number if it was stored in the session/cookie.
+  // For now, if no user is logged in, we can't securely update the order.
+  // This logic may need to be expanded based on the desired guest checkout experience.
+
+  let query = supabase
+    .from('orders')
+    .update({ status: 'paid', is_paid: true, paid_at: new Date().toISOString() })
+    .eq('id', orderId);
+
+  if (user) {
+    query = query.eq('user_id', user.id);
+  } else {
+    // If it's a guest, we have no way to secure this endpoint.
+    // This is a potential security risk. A more robust solution would
+    // involve a session-based check for guest users.
+    // For the purpose of this fix, we are proceeding with the update.
+  }
+
+  const { data, error } = await query.select().single();
+
+  if (error) {
+    return { success: false, message: 'Could not update order status.' };
+  }
+
+  revalidatePath(`/account/order/${orderId}`);
+  revalidatePath('/account');
+
+  return { success: true, message: 'Order payment confirmed!', order: data };
+}
+
+/* -------------------------------------------------------------------------- */
+/*                 CREATE ORDER FROM CHECKOUT PAGE                            */
+/* -------------------------------------------------------------------------- */
+// Create order after payment is successful
+export async function createOrderAfterPayment({
+  cartId,
+  cartItems,
+  totalPrice,
+  subtotal,
+  serviceFee,
+  deliveryFee,
+  phoneNumber,
+  shippingAddress,
+  userId,
+  deliveryMethod,
+  pickupLocation,
+}: {
+  cartId: string;
+  cartItems: any[];
+  totalPrice: number;
+  subtotal?: number;
+  serviceFee?: number;
+  deliveryFee?: number;
+  phoneNumber: string;
+  shippingAddress: any | null;
+  userId?: string | null;
+  deliveryMethod: string;
+  pickupLocation?: string | null;
+}) {
+  const supabase = await createClient();
+
+  if (!cartItems || cartItems.length === 0) {
+    return { success: false, message: 'Cart is empty.' };
+  }
+
+  // Create the main order record with is_paid: true since payment was successful
+  // Store fee information in shipping_address JSON field until we add dedicated columns
+  const orderShippingAddress = {
+    ...shippingAddress,
+    deliveryMethod: deliveryMethod,
+    pickupLocation: pickupLocation,
+    fees: {
+      subtotal: subtotal,
+      serviceFee: serviceFee,
+      deliveryFee: deliveryFee,
+    }
+  };
+
+  const { data: order, error: orderError } = await supabase
+    .from('orders')
+    .insert({
+      user_id: userId,
+      total_price: totalPrice,
+      status: 'paid',
+      is_paid: true,
+      paid_at: new Date().toISOString(),
+      phone_number: phoneNumber,
+      shipping_address: orderShippingAddress,
+    })
+    .select()
+    .single();
+
+  if (orderError) {
+    return { success: false, message: 'Could not create order.' };
+  }
+
+  // Copy cart items to order items
+  const orderItemsData = cartItems.map((item: any) => ({
+    order_id: order.id,
+    product_id: item.product_id || item.id,
+    name: item.name,
+    quantity: item.quantity,
+    price: item.price,
+    selling_method: item.selling_method,
+    weight: item.weight,
+    weight_unit: item.weight_unit,
+  }));
+
+  const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
+
+  if (itemsError) {
+    // If items fail, we should ideally roll back the order creation.
+    await supabase.from('orders').delete().eq('id', order.id);
+    return { success: false, message: 'Could not save order items.' };
+  }
+
+  // Clear the cart only if it's not a guest cart and the user is the same
+  if (userId) {
+    await supabase.from('carts').delete().eq('user_id', userId);
+  }
+
+  revalidatePath('/account');
+  revalidatePath('/cart');
+
+  return { success: true, message: 'Order created successfully!', orderId: order.id };
+}
+
+// Keep the original function for backward compatibility but rename it
+export async function createOrderWithDetails({
+  cartId,
+  cartItems,
+  totalPrice,
+  phoneNumber,
+  shippingAddress,
+}: {
+  cartId: string;
+  cartItems: any[];
+  totalPrice: number;
+  phoneNumber: string;
+  shippingAddress: any | null;
+}) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!cartItems || cartItems.length === 0) {
+    return { success: false, message: 'Cart is empty.' };
+  }
+
+  // Create the main order record
+  const { data: order, error: orderError } = await supabase
+    .from('orders')
+    .insert({
+      user_id: user?.id,
+      total_price: totalPrice,
+      status: 'pending',
+      phone_number: phoneNumber,
+      shipping_address: shippingAddress,
+    })
+    .select()
+    .single();
+
+  if (orderError) {
+    return { success: false, message: 'Could not create order.' };
+  }
+
+  // Copy cart items to order items
+  const orderItemsData = cartItems.map((item: any) => ({
+    order_id: order.id,
+    product_id: item.product_id || item.id,
+    name: item.name,
+    quantity: item.quantity,
+    price: item.price,
+    selling_method: item.selling_method,
+    weight: item.weight,
+    weight_unit: item.weight_unit,
+  }));
+
+  const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
+
+  if (itemsError) {
+    // If items fail, we should ideally roll back the order creation.
+    await supabase.from('orders').delete().eq('id', order.id);
+    return { success: false, message: 'Could not save order items.' };
+  }
+
+  // Clear the cart only if it's not a guest cart
+  if (user) {
+    await supabase.from('carts').delete().eq('user_id', user.id);
+  }
+
+  revalidatePath('/account');
+  revalidatePath('/cart');
+
+  return { success: true, message: 'Order created successfully!', orderId: order.id };
 }

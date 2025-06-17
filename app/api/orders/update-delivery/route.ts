@@ -14,7 +14,6 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    console.log(`API: Updating delivery for order ${orderId} to ${isDelivered ? 'delivered' : 'not delivered'}`);
     
     // First, fetch the current order to check status
     const { data: currentOrder, error: fetchError } = await supabaseAdmin
@@ -24,7 +23,6 @@ export async function POST(request: Request) {
       .single();
     
     if (fetchError) {
-      console.error('API: Error fetching order:', fetchError);
       return NextResponse.json({
         success: false,
         message: `Failed to fetch order: ${fetchError.message}`
@@ -60,9 +58,6 @@ export async function POST(request: Request) {
         updateData.status = currentOrder.is_paid ? 'paid' : 'pending';
       }
     }
-    
-    console.log('API: Update data:', updateData);
-    
     // Update with supabaseAdmin for full permissions
     const { data, error } = await supabaseAdmin
       .from(SUPABASE_TABLES.ORDERS)
@@ -71,7 +66,6 @@ export async function POST(request: Request) {
       .select();
     
     if (error) {
-      console.error('API: Error updating delivery status:', error);
       return NextResponse.json({
         success: false,
         message: `Failed to update delivery status: ${error.message}`
@@ -84,7 +78,7 @@ export async function POST(request: Request) {
       data
     });
   } catch (error) {
-    console.error('API: Unexpected error:', error);
+
     return NextResponse.json({
       success: false,
       message: error instanceof Error ? error.message : 'Unexpected error occurred'

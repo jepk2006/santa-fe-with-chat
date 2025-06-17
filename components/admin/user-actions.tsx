@@ -36,7 +36,7 @@ export function UserActions({ user }: UserActionsProps) {
     
     try {
       setIsDeleting(true);
-      console.log("Deleting user with ID:", user.id);
+  
       
       const result = await deleteUser(user.id);
       
@@ -44,11 +44,9 @@ export function UserActions({ user }: UserActionsProps) {
         toast.success('User deleted successfully');
         router.refresh();
       } else {
-        console.error("Delete failed:", result.message);
         toast.error(`Failed to delete user: ${result.message}`);
       }
     } catch (error) {
-      console.error("Error in delete handler:", error);
       toast.error(`Error deleting user: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsDeleting(false);

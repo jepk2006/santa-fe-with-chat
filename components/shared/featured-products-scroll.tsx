@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { ContainerScroll } from "@/components/ui/container-scroll-animation";
 import { Product } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import AnimatedText from "@/components/ui/animated-text";
 
 const AUTO_ROTATE_INTERVAL = 10000; // 10 seconds
 
@@ -31,16 +31,6 @@ export default function FeaturedProductsScroll({
   const featuredProduct = productsWithBanners[currentIndex];
   const mainContainerRef = useRef<HTMLDivElement>(null);
   
-  // For parallax scroll effect
-  const { scrollYProgress } = useScroll({
-    target: mainContainerRef,
-    offset: ["start start", "end start"]
-  });
-
-  // Parallax effect values
-  const parallaxY = useTransform(scrollYProgress, [0, 1], [0, 300]);
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
   // Setup auto-rotation
   useEffect(() => {
     const startAutoRotate = () => {
@@ -111,7 +101,7 @@ export default function FeaturedProductsScroll({
   return (
     <div 
       ref={mainContainerRef}
-      className="flex flex-col overflow-hidden mb-16 md:mb-24 lg:mb-32"
+      className="flex flex-col mb-6 sm:mb-8 md:mb-12 lg:mb-16 xl:mb-20"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -125,55 +115,50 @@ export default function FeaturedProductsScroll({
             transition={{ duration: 0.5 }}
             className="w-full"
           >
-            <ContainerScroll
-              titleComponent={
-                <>
-                  <h1 className="text-4xl font-semibold text-black">
-                    {featuredProduct.category ? (
-                      <span className="text-sm md:text-xl font-medium text-primary uppercase tracking-wider mb-4 block">
-                        {featuredProduct.category}
-                      </span>
-                    ) : null}
-                    <span className="text-3xl md:text-4xl lg:text-[5rem] font-bold mt-1 leading-none font-heading">
-                      {featuredProduct.name}
-                    </span>
-                  </h1>
-                  {featuredProduct.description && (
-                    <p className="text-muted-foreground mt-2 md:mt-4 max-w-2xl mx-auto text-sm md:text-base line-clamp-2 md:line-clamp-3">
-                      {featuredProduct.description}
-                    </p>
-                  )}
-                  <div className="mt-4 md:mt-8">
-                    <Button asChild size={isMobile ? "default" : "lg"} className="rounded-full">
-                      <Link href={`/product/${featuredProduct.slug}`}>
-                        View Product <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </div>
-
-                  {/* Product counter */}
-                  {productsWithBanners.length > 1 && (
-                    <div className="mt-2 md:mt-4 text-xs md:text-sm text-muted-foreground">
-                      {currentIndex + 1} / {productsWithBanners.length}
-                    </div>
-                  )}
-                </>
-              }
-            >
-              <div className="w-full max-w-[98vw] mx-auto">
-                <Link href={`/product/${featuredProduct.slug}`} className="block relative h-[600px] w-full rounded-2xl overflow-hidden">
-                  <Image
-                    src={featuredProduct.banner || ""}
-                    alt={featuredProduct.name}
-                    fill
-                    priority
-                    className="object-contain object-center w-full h-full"
-                    sizes="98vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-70"></div>
-                </Link>
+            <div className="text-center max-w-5xl mx-auto px-4 mb-4 sm:mb-6 md:mb-8 py-2 md:py-4">
+              {featuredProduct.category && (
+                <span className="text-xs sm:text-sm md:text-lg lg:text-xl font-medium text-brand-red uppercase tracking-wider mb-2 sm:mb-3 md:mb-4 block">
+                  {featuredProduct.category}
+                </span>
+              )}
+              <AnimatedText
+                text={featuredProduct.name}
+                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight font-heading text-center"
+                delay={0.05}
+                stagger={0.03}
+              />
+              {featuredProduct.description && (
+                <AnimatedText
+                  text={featuredProduct.description}
+                  className="text-muted-foreground mt-3 sm:mt-4 md:mt-5 lg:mt-6 max-w-sm sm:max-w-xl md:max-w-2xl mx-auto text-sm md:text-base line-clamp-3 text-center px-2 sm:px-0"
+                  delay={0.05}
+                  stagger={0.025}
+                />
+              )}
+              <div className="mt-4 sm:mt-5 md:mt-6 lg:mt-8">
+                <Button asChild size={isMobile ? 'default' : 'lg'} className="rounded-full">
+                  <Link href={`/product/${featuredProduct.slug}`}>Ver producto <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                </Button>
               </div>
-            </ContainerScroll>
+              {productsWithBanners.length > 1 && (
+                <div className="mt-2 sm:mt-3 md:mt-4 text-xs md:text-sm text-muted-foreground">
+                  {currentIndex + 1} / {productsWithBanners.length}
+                </div>
+              )}
+            </div>
+
+            <div className="w-full max-w-[96vw] sm:max-w-[98vw] mx-auto px-2 sm:px-0">
+              <Link href={`/product/${featuredProduct.slug}`} className="block relative h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] w-full rounded-2xl sm:rounded-3xl overflow-hidden">
+                <Image
+                  src={featuredProduct.banner || ""}
+                  alt={featuredProduct.name}
+                  fill
+                  priority
+                  className="object-contain object-center w-full h-full"
+                  sizes="98vw"
+                />
+              </Link>
+            </div>
           </motion.div>
         </AnimatePresence>
 
@@ -199,47 +184,6 @@ export default function FeaturedProductsScroll({
           </>
         )}
       </div>
-
-      {/* Other featured products with parallax effect */}
-      {productsWithBanners.length > 1 && (
-        <motion.div 
-          style={{ translateY: parallaxY, opacity }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 mt-20 relative z-10 pt-4"
-        >
-          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center font-heading text-black">More Featured Products</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {productsWithBanners
-              .filter((_, index) => index !== currentIndex)
-              .slice(0, 3)
-              .map((product) => (
-                <Link 
-                  key={product.id} 
-                  href={`/product/${product.slug}`}
-                  className="group block overflow-hidden rounded-2xl shadow-lg bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-                >
-                  <div className="aspect-[16/9] relative overflow-hidden">
-                    <Image
-                      src={product.banner || ""}
-                      alt={product.name}
-                      fill
-                      className="object-cover object-center w-full h-full transform group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-4 left-4 right-4 text-white">
-                      <h3 className="font-bold text-base md:text-xl line-clamp-1">{product.name}</h3>
-                      {product.category && (
-                        <div className="text-xs uppercase tracking-wider text-white/70 mt-1">
-                          {product.category}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-          </div>
-        </motion.div>
-      )}
     </div>
   );
 } 

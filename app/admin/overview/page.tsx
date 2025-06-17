@@ -55,7 +55,6 @@ export default async function AdminOverviewPage() {
     try {
       rawSummary = await getOrderSummary();
     } catch (summaryError) {
-      console.error('Error fetching order summary:', summaryError);
       throw new Error(
         summaryError instanceof Error 
           ? summaryError.message 
@@ -299,9 +298,6 @@ export default async function AdminOverviewPage() {
       </div>
     );
   } catch (error) {
-    // Proper error handling with detailed logging
-    console.error('Error in AdminOverviewPage:', error instanceof Error ? error.message : 'Unknown error', 
-      error instanceof Error ? error.stack : '');
     
     // Create a more specific error message for display
     const errorMessage = error instanceof Error 

@@ -69,7 +69,7 @@ export default function PedidosPage() {
   useEffect(() => {
     async function fetchPedidos() {
       try {
-        console.log('Fetching orders from API');
+    
         setLoading(true);
         
         const response = await fetch('/api/admin/orders');
@@ -81,13 +81,12 @@ export default function PedidosPage() {
         const result = await response.json();
         
         if (result.data) {
-          console.log(`Found ${result.data.length || 0} orders`);
+  
           setPedidos(result.data);
         } else {
           setPedidos([]);
         }
       } catch (error) {
-        console.error('Error fetching orders:', error);
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -112,6 +111,9 @@ export default function PedidosPage() {
     router.push(`/admin/pedidos/edit/${orderId}`);
   };
 
+  // Helper to normalize strings (remove accents, lowercase)
+  const normalize = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
   // Filter orders based on search term and date filter
   const filteredPedidos = pedidos.filter(pedido => {
     // First, apply date filter if it exists
@@ -131,33 +133,36 @@ export default function PedidosPage() {
     
     // Then apply text search if it exists
     if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase();
-      
-      // Search by order id (full or shortened)
-      if (pedido.id.toLowerCase().includes(searchLower) || 
-          formatId(pedido.id).toLowerCase().includes(searchLower)) {
-        return true;
-      }
-      
-      // Search by customer name (from user or shipping_address)
-      const customerName = pedido.user?.[0]?.name || pedido.shipping_address?.fullName || '';
-      if (customerName.toLowerCase().includes(searchLower)) {
-        return true;
-      }
-      
-      // Search by phone number - handle both formatted and unformatted searches
-      if (pedido.phone_number) {
-        // Get only digits from the stored phone number
-        const phoneDigits = pedido.phone_number.replace(/\D/g, '');
-        // Get only digits from the search term
-        const searchDigits = searchTerm.replace(/\D/g, '');
-        
-        if (phoneDigits.includes(searchDigits) || pedido.phone_number.toLowerCase().includes(searchLower)) {
-          return true;
-        }
-      }
-      
-      return false;
+      const searchLower = normalize(searchTerm);
+      const tokens = searchLower.split(' ').filter(Boolean);
+
+      // Build list of searchable fields for this order
+      const customerName = Array.isArray(pedido.user)
+        ? (pedido.user[0]?.name || '')
+        : ((pedido.user as any)?.name || '');
+      const shippingName = pedido.shipping_address?.fullName || '';
+      const email = Array.isArray(pedido.user)
+        ? (pedido.user[0]?.email || '')
+        : ((pedido.user as any)?.email || '');
+      const orderIdShort = formatId(pedido.id);
+
+      // Combine relevant text fields
+      const searchableText = [
+        pedido.id,
+        orderIdShort,
+        customerName,
+        shippingName,
+        email,
+        pedido.phone_number || '',
+        ...pedido.order_items.map(item => item.name || '')
+      ]
+        .map(txt => normalize(txt))
+        .join(' ');
+
+      // Check that every token appears in the combined searchable text
+      const allTokensMatch = tokens.every(token => searchableText.includes(token));
+
+      return allTokensMatch;
     }
     
     // If we have a date filter but no search term, or if we have neither, we return true
@@ -189,7 +194,7 @@ export default function PedidosPage() {
             placeholder="Buscar por ID, nombre, teléfono..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full"
+            className="w-full border-2 border-gray-300 focus:border-blue-500"
           />
         </div>
         
@@ -198,7 +203,7 @@ export default function PedidosPage() {
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
-            className="w-44"
+            className="w-44 border-2 border-gray-300 focus:border-blue-500"
           />
           
           {dateFilter && (
@@ -279,10 +284,10 @@ export default function PedidosPage() {
                             }
                             className={`capitalize text-xs px-2 py-0.5 ${
                               pedido.status === 'delivered' ? 'bg-green-500 hover:bg-green-600 text-white' :
-                              pedido.status === 'paid' ? 'bg-blue-500 hover:bg-blue-600 text-white' :
-                              pedido.status === 'shipped' ? 'bg-yellow-400 hover:bg-yellow-500 text-gray-800' :
+                              pedido.status === 'paid' ? 'bg-blue-300 hover:bg-blue-400 text-brand-white' :
+                              pedido.status === 'shipped' ? 'bg-blue-200 hover:bg-blue-300 text-blue-dark' :
                               pedido.status === 'pending' ? 'bg-gray-200 hover:bg-gray-300 text-gray-700' :
-                              pedido.status === 'cancelled' ? 'bg-red-500 hover:bg-red-600 text-white' : ''
+                              pedido.status === 'cancelled' ? 'bg-brand-red hover:bg-red-300 text-brand-white' : ''
                             }`}
                           >
                             {pedido.status}
@@ -293,7 +298,7 @@ export default function PedidosPage() {
                         {pedido.is_paid ? (
                           <Badge className="bg-green-100 text-green-700 text-xs px-2 py-0.5">Sí</Badge>
                         ) : (
-                          <Badge className="bg-red-100 text-red-700 text-xs px-2 py-0.5">No</Badge>
+                          <Badge className="bg-red-100 text-red-dark text-xs px-2 py-0.5">No</Badge>
                         )}
                       </TableCell>
                       <TableCell>
@@ -303,7 +308,7 @@ export default function PedidosPage() {
                         {pedido.is_delivered ? (
                           <Badge className="bg-green-100 text-green-700 text-xs px-2 py-0.5">Sí</Badge>
                         ) : (
-                          <Badge className="bg-red-100 text-red-700 text-xs px-2 py-0.5">No</Badge>
+                          <Badge className="bg-red-100 text-red-dark text-xs px-2 py-0.5">No</Badge>
                         )}
                       </TableCell>
                       <TableCell>

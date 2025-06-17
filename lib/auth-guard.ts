@@ -9,13 +9,11 @@ export async function authGuard(): Promise<User> {
     
     // Additional check to ensure we have a proper user object with role
     if (!user || !user.role || !user.id) {
-      console.error('Invalid user object returned from checkAdminStatus');
       redirect('/login');
     }
     
     return user;
   } catch (error) {
-    console.error('Auth guard error:', error);
     redirect('/login');
   }
 }

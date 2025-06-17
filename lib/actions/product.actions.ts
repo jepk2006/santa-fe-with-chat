@@ -173,7 +173,6 @@ export async function createProduct(product: Omit<Product, 'id' | 'created_at' |
       message: 'Product created successfully'
     };
   } catch (error) {
-    console.error('Error creating product:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create product',
@@ -289,7 +288,6 @@ export async function deleteProduct(id: string) {
         .eq('id', cart.id);
 
       if (updateCartError) {
-        console.error('Error updating cart:', updateCartError);
         // Continue with other carts even if one fails
       }
     }
@@ -313,7 +311,6 @@ export async function deleteProduct(id: string) {
       message: 'Product deleted successfully',
     };
   } catch (error: any) {
-    console.error('Error deleting product:', error);
     return {
       success: false,
       message: error.message || 'Failed to delete product',
@@ -403,7 +400,6 @@ export async function getSimilarProducts(categoryName: string, currentProductId:
     const convertedData = await convertToCamelCase(data);
     return convertedData;
   } catch (error) {
-    console.error('Error fetching similar products:', error);
     return [];
   }
 }

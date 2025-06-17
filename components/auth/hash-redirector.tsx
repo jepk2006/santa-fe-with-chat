@@ -17,7 +17,7 @@ export default function HashRedirector() {
     // Check if it contains auth tokens but we're not on the reset-password page
     if (hash.includes('access_token=') && 
         !window.location.pathname.includes('/reset-password')) {
-      console.log('Found auth token in hash, redirecting to reset-password');
+;
       
       // Preserve the hash when redirecting
       const resetUrl = `/reset-password${hash}`;

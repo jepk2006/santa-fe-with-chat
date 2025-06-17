@@ -45,6 +45,10 @@ export default function LoginPage() {
             </p>
           </div>
           <LoginForm />
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            ¿No tienes cuenta?{' '}
+            <Link href="/register" className="underline underline-offset-4 hover:text-primary">Crear cuenta</Link>
+          </p>
         </div>
       </div>
     </div>

@@ -90,7 +90,6 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
         setCategories(categoriesData);
         setBrands(brandsData);
       } catch (error) {
-        console.error("Error fetching categories or brands:", error);
         toast({
           variant: 'destructive',
           description: 'Failed to load categories and brands',
@@ -260,7 +259,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Product name" {...field} />
+                  <Input placeholder="Product name" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -274,7 +273,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
               <FormItem>
                 <FormLabel>Slug</FormLabel>
                 <FormControl>
-                  <Input placeholder="product-slug" {...field} />
+                  <Input placeholder="product-slug" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -292,6 +291,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                     type="number" 
                     step="0.01" 
                     placeholder="0.00" 
+                    className="border-2 border-gray-300 focus:border-blue-500"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     value={field.value}
@@ -337,7 +337,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                           <SelectContent>
@@ -368,7 +368,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                     <div className="flex flex-row space-x-2">
                       <div className="flex-grow">
                         <FormControl>
-                          <Input placeholder="New category" {...field} />
+                          <Input placeholder="New category" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
                         </FormControl>
                       </div>
                       {categories.length > 0 && (
@@ -402,7 +402,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                           value={field.value}
                           onValueChange={field.onChange}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                             <SelectValue placeholder="Select a brand" />
                           </SelectTrigger>
                           <SelectContent>
@@ -433,7 +433,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                     <div className="flex flex-row space-x-2">
                       <div className="flex-grow">
                         <FormControl>
-                          <Input placeholder="New brand" {...field} />
+                          <Input placeholder="New brand" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
                         </FormControl>
                       </div>
                       {brands.length > 0 && (
@@ -466,6 +466,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                     min="0" 
                     max="5" 
                     placeholder="0.0" 
+                    className="border-2 border-gray-300 focus:border-blue-500"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     value={field.value}
@@ -487,6 +488,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                     type="number" 
                     min="0" 
                     placeholder="0" 
+                    className="border-2 border-gray-300 focus:border-blue-500"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     value={field.value}
@@ -528,7 +530,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                   value={field.value}
                   onValueChange={field.onChange}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                     <SelectValue placeholder="Select selling method" />
                   </SelectTrigger>
                   <SelectContent>
@@ -556,7 +558,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                       value={field.value || ''}
                       onValueChange={field.onChange}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                         <SelectValue placeholder="Select weight unit" />
                       </SelectTrigger>
                       <SelectContent>
@@ -587,6 +589,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                         step="0.01" 
                         min="0" 
                         placeholder="0.00" 
+                        className="border-2 border-gray-300 focus:border-blue-500"
                         value={field.value === null ? '' : field.value}
                         onChange={(e) => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))}
                       />
@@ -621,7 +624,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
               <FormControl>
                 <Textarea
                   placeholder="Product description"
-                  className="resize-none"
+                  className="resize-none border-2 border-gray-300 focus:border-blue-500"
                   {...field}
                 />
               </FormControl>

@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase URL or Anon Key in environment variables for middleware.');
     // Potentially return a response indicating server misconfiguration or just pass through
     return response;
   }
@@ -67,7 +66,6 @@ export async function middleware(request: NextRequest) {
 
   // Check for recovery or reset password flow (e.g., #type=recovery&access_token=...)
   if (hash && hash.includes('type=recovery')) {
-    console.log('Recovery URL detected in middleware, redirecting to /reset-password with hash.');
     const resetUrl = new URL('/reset-password', request.url);
     resetUrl.hash = hash; // Preserve the full hash for the client-side
     return NextResponse.redirect(resetUrl);
@@ -76,7 +74,6 @@ export async function middleware(request: NextRequest) {
   // If the user lands on /reset-password and there's a hash, rewrite to ensure client gets it.
   // This is often for when the page is loaded directly with the recovery link hash.
   if (pathname === '/reset-password' && hash) {
-    console.log('Reset password URL with hash detected in middleware, rewriting.');
     // Simply rewrite to the same path. The client-side code on /reset-password will handle the hash.
     return NextResponse.rewrite(request.url);
   }

@@ -96,8 +96,6 @@ async function updateOrderStatus(
   tableToUse: string
 ) {
   try {
-    console.log(`Updating order status to: ${status} for order: ${orderId} in table: ${tableToUse}`);
-    
     // Create update data with status
     let updateData: any = {
       status: status
@@ -127,15 +125,11 @@ async function updateOrderStatus(
       // Keep existing paid/delivered status for canceled orders
     }
 
-    console.log('Update data:', JSON.stringify(updateData, null, 2));
-
     const { data, error } = await supabaseClient
       .from(tableToUse)
       .update(updateData)
       .eq('id', orderId)
       .select();
-    
-    console.log('Update response:', data, error);
     
     if (error) {
       throw new Error(error.message || 'Failed to update status');
@@ -143,7 +137,6 @@ async function updateOrderStatus(
     
     return { success: true, data };
   } catch (error) {
-    console.error('Error updating order status:', error);
     return { success: false, message: error instanceof Error ? error.message : 'Failed to update status' };
   }
 }
@@ -151,8 +144,6 @@ async function updateOrderStatus(
 // Function to update payment status
 async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableToUse: string) {
   try {
-    console.log(`Updating payment status to: ${isPaid ? 'paid' : 'unpaid'} for order: ${orderId} in table: ${tableToUse}`);
-    
     let updateData: any = {
       is_paid: isPaid,
       paid_at: isPaid ? new Date().toISOString() : null,
@@ -188,15 +179,11 @@ async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableT
       }
     }
 
-    console.log('Update data:', JSON.stringify(updateData, null, 2));
-
     const { data, error } = await supabaseClient
       .from(tableToUse)
       .update(updateData)
       .eq('id', orderId)
       .select();
-    
-    console.log('Update response:', data, error);
     
     if (error) {
       throw new Error(error.message || 'Failed to update payment status');
@@ -204,7 +191,6 @@ async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableT
     
     return { success: true, data };
   } catch (error) {
-    console.error('Error updating payment status:', error);
     return { success: false, message: error instanceof Error ? error.message : 'Failed to update payment status' };
   }
 }
@@ -212,8 +198,6 @@ async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableT
 // Function to update delivery status
 async function updateOrderDeliveryStatus(orderId: string, isDelivered: boolean, tableToUse: string) {
   try {
-    console.log(`Updating delivery status to: ${isDelivered ? 'delivered' : 'not delivered'} for order: ${orderId} in table: ${tableToUse}`);
-    
     let updateData: any = {
       is_delivered: isDelivered,
       delivered_at: isDelivered ? new Date().toISOString() : null,
@@ -251,15 +235,11 @@ async function updateOrderDeliveryStatus(orderId: string, isDelivered: boolean, 
       }
     }
 
-    console.log('Update data:', JSON.stringify(updateData, null, 2));
-
     const { data, error } = await supabaseClient
       .from(tableToUse)
       .update(updateData)
       .eq('id', orderId)
       .select();
-    
-    console.log('Update response:', data, error);
     
     if (error) {
       throw new Error(error.message || 'Failed to update delivery status');
@@ -267,7 +247,6 @@ async function updateOrderDeliveryStatus(orderId: string, isDelivered: boolean, 
     
     return { success: true, data };
   } catch (error) {
-    console.error('Error updating delivery status:', error);
     return { success: false, message: error instanceof Error ? error.message : 'Failed to update delivery status' };
   }
 }
@@ -275,15 +254,11 @@ async function updateOrderDeliveryStatus(orderId: string, isDelivered: boolean, 
 // Function to update phone number
 async function updatePhoneNumber(orderId: string, phoneNumber: string, tableToUse: string) {
   try {
-    console.log(`Updating phone number to: ${phoneNumber} for order: ${orderId} in table: ${tableToUse}`);
-    
     const { data, error } = await supabaseClient
       .from(tableToUse)
       .update({ phone_number: phoneNumber })
       .eq('id', orderId)
       .select();
-    
-    console.log('Update response:', data, error);
     
     if (error) {
       throw new Error(error.message || 'Failed to update phone number');
@@ -291,7 +266,6 @@ async function updatePhoneNumber(orderId: string, phoneNumber: string, tableToUs
     
     return { success: true, data };
   } catch (error) {
-    console.error('Error updating phone number:', error);
     return { success: false, message: error instanceof Error ? error.message : 'Failed to update phone number' };
   }
 }
@@ -325,8 +299,6 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
           : null
       };
       
-      console.log('Updating order with data:', JSON.stringify(updateData, null, 2));
-      
       // Call server API with admin key
       const response = await fetch('/api/test-supabase', {
         method: 'POST',
@@ -357,7 +329,6 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
         throw new Error(result.error || 'Failed to update order');
       }
     } catch (error) {
-      console.error('Error updating order:', error);
       setFeedback({
         message: error instanceof Error ? error.message : String(error),
         type: 'error'

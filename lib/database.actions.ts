@@ -1,7 +1,6 @@
 'use server';
 
 export async function handleSupabaseError(error: any) {
-  console.error('Supabase error:', error);
   throw new Error(error.message || 'An error occurred while accessing the database');
 }
 

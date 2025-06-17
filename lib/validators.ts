@@ -109,6 +109,10 @@ export const updateProfileSchema = z.object({
 export const createUserSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
   email: z.string().email('Invalid email address'),
+  phone_number: z.string().optional().refine(
+    (val) => !val || /^\(\d\) \d{3}-\d{4}$/.test(val), 
+    "Phone number must be in format (7) 123-4567"
+  ),
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
   role: z.enum(USER_ROLES, {
     errorMap: () => ({ message: 'Invalid role' }),
@@ -118,6 +122,10 @@ export const createUserSchema = z.object({
 // Schema to update users
 export const updateUserSchema = updateProfileSchema.extend({
   id: z.string().min(1, 'ID is required'),
+  phone_number: z.string().optional().refine(
+    (val) => !val || /^\(\d\) \d{3}-\d{4}$/.test(val), 
+    "Phone number must be in format (7) 123-4567"
+  ),
   role: z.enum(USER_ROLES, {
     errorMap: () => ({ message: 'Invalid role' }),
   }),

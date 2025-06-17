@@ -60,7 +60,7 @@ export const columns: ColumnDef<Product>[] = [
       // Use a safer way to access inStock that handles potential undefined values
       const inStock = row.original.inStock === true;
       return (
-        <div className={inStock ? "text-green-600 font-medium" : "text-red-600 font-medium"}>
+        <div className={inStock ? "text-brand-blue font-medium" : "text-red-300 font-medium"}>
           {inStock ? "In Stock" : "Out of Stock"}
         </div>
       );

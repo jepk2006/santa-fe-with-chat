@@ -6,35 +6,47 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '../supabase-server';
 
 export async function getReviewsByProductId(productId: string) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: reviews, error } = await supabase
-    .from(SUPABASE_TABLES.REVIEWS)
-    .select('*')
-    .eq('product_id', productId);
+    const { data: reviews, error } = await supabase
+      .from(SUPABASE_TABLES.REVIEWS)
+      .select('*')
+      .eq('product_id', productId);
 
-  if (error) {
-    handleSupabaseError(error);
+    if (error) {
+      handleSupabaseError(error);
+    }
+
+    return reviews || [];
+  } catch (error) {
+    return [];
   }
-
-  return reviews;
 }
 
 export async function getReview(productId: string, userId: string) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const { data: review, error } = await supabase
-    .from(SUPABASE_TABLES.REVIEWS)
-    .select('*')
-    .eq('product_id', productId)
-    .eq('user_id', userId)
-    .single();
+    const { data: review, error } = await supabase
+      .from(SUPABASE_TABLES.REVIEWS)
+      .select('*')
+      .eq('product_id', productId)
+      .eq('user_id', userId)
+      .single();
 
-  if (error && error.code !== 'PGRST116') {
-    handleSupabaseError(error);
+    if (error && error.code !== 'PGRST116') {
+      // If the table doesn't exist, return null instead of throwing error
+      if (error.code === '42P01') {
+        return null;
+      }
+      handleSupabaseError(error);
+    }
+
+    return review;
+  } catch (error) {
+    return null;
   }
-
-  return review;
 }
 
 export async function createReview(data: {
@@ -45,38 +57,50 @@ export async function createReview(data: {
   user_id: string;
   id?: string;
 }) {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  if (data.id) {
-    // Update existing review
-    const { error } = await supabase
-      .from(SUPABASE_TABLES.REVIEWS)
-      .update({
-        title: data.title,
-        description: data.comment,
-        rating: data.rating,
-      })
-      .eq('id', data.id);
+    if (data.id) {
+      // Update existing review
+      const { error } = await supabase
+        .from(SUPABASE_TABLES.REVIEWS)
+        .update({
+          title: data.title,
+          description: data.comment,
+          rating: data.rating,
+        })
+        .eq('id', data.id);
 
-    if (error) {
-      handleSupabaseError(error);
+      if (error) {
+        // If the table doesn't exist, silently skip review creation
+        if (error.code === '42P01') {
+          return;
+        }
+        handleSupabaseError(error);
+      }
+    } else {
+      // Create new review
+      const { error } = await supabase
+        .from(SUPABASE_TABLES.REVIEWS)
+        .insert({
+          title: data.title,
+          description: data.comment,
+          rating: data.rating,
+          product_id: data.product_id,
+          user_id: data.user_id,
+        });
+
+      if (error) {
+        // If the table doesn't exist, silently skip review creation
+        if (error.code === '42P01') {
+          return;
+        }
+        handleSupabaseError(error);
+      }
     }
-  } else {
-    // Create new review
-    const { error } = await supabase
-      .from(SUPABASE_TABLES.REVIEWS)
-      .insert({
-        title: data.title,
-        description: data.comment,
-        rating: data.rating,
-        product_id: data.product_id,
-        user_id: data.user_id,
-      });
 
-    if (error) {
-      handleSupabaseError(error);
-    }
+    revalidatePath(`/product/${data.product_id}`);
+  } catch (error) {
+    // Silently fail
   }
-
-  revalidatePath(`/product/${data.product_id}`);
 }

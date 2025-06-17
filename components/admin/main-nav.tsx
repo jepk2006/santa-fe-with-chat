@@ -33,6 +33,12 @@ export function MainNav({ className, user }: MainNavProps) {
 
   const routes = [
     {
+      href: '/',
+      label: 'Inicio',
+      active: pathname === '/',
+      show: true,
+    },
+    {
       href: '/admin/overview',
       label: 'Dashboard',
       active: pathname === '/admin' || pathname === '/admin/overview',
@@ -62,14 +68,14 @@ export function MainNav({ className, user }: MainNavProps) {
   const visibleRoutes = routes.filter(route => route.show);
 
   return (
-    <nav className={cn('items-center space-x-4 lg:space-x-6', className)}>
+    <nav className={cn('flex items-center space-x-4 lg:space-x-6', className)}>
       {visibleRoutes.map((route) => (
         <Link
           key={route.href}
           href={route.href}
           className={cn(
-            'text-sm font-medium transition-colors hover:text-primary',
-            route.active ? 'text-black' : 'text-muted-foreground'
+            'text-base font-semibold transition-colors hover:text-black',
+            route.active ? 'text-black' : 'text-neutral-600'
           )}
         >
           {route.label}

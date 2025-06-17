@@ -15,6 +15,12 @@ export function MainNav({ className, user }: MainNavProps) {
 
   const routes = [
     {
+      href: '/',
+      label: 'Inicio',
+      active: pathname === '/',
+      show: true,
+    },
+    {
       href: '/admin/users',
       label: 'Usuarios',
       active: pathname === '/admin/users',
@@ -44,8 +50,8 @@ export function MainNav({ className, user }: MainNavProps) {
             key={route.href}
             href={route.href}
             className={cn(
-              'text-sm font-medium transition-colors hover:text-primary',
-              route.active ? 'text-black dark:text-white' : 'text-muted-foreground'
+              'text-base font-semibold transition-colors hover:text-black',
+              route.active ? 'text-black' : 'text-neutral-600'
             )}
           >
             {route.label}

@@ -64,7 +64,7 @@ export const FileUpload = ({
     accept,
     onDrop: handleFileChange,
     onDropRejected: (error) => {
-      console.log(error);
+
     },
   });
 

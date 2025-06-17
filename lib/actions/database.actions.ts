@@ -70,7 +70,6 @@ export async function convertToCamelCase(obj: any): Promise<any> {
             try {
               imagesArray = JSON.parse(value);
             } catch (e) {
-              console.error('Failed to parse images string as JSON:', value);
               imagesArray = [];
             }
           }

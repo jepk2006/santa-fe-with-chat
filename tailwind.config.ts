@@ -24,6 +24,42 @@ export default {
         },
       },
   		colors: {
+  			// ─── Primary Brand Colors ───────────────────────────────
+  			'brand-red': 'var(--brand-red)',
+  			'brand-blue': 'var(--brand-blue)',
+  			'brand-white': 'var(--brand-white)',
+  			
+  			// ─── Blue Tints & Shades ────────────────────────────────
+  			'blue-50': 'var(--blue-50)',
+  			'blue-100': 'var(--blue-100)',
+  			'blue-200': 'var(--blue-200)',
+  			'blue-300': 'var(--blue-300)',
+  			'blue-400': 'var(--blue-400)',
+  			'blue-500': 'var(--blue-500)',
+  			'blue-dark': 'var(--blue-dark)',
+  			
+  			// ─── Red Tints & Shades ─────────────────────────────────
+  			'red-100': 'var(--red-100)',
+  			'red-200': 'var(--red-200)',
+  			'red-300': 'var(--red-300)',
+  			'red-400': 'var(--red-400)',
+  			'red-dark': 'var(--red-dark)',
+  			
+  			// ─── Neutral Grays ──────────────────────────────────────
+  			'gray-100': 'var(--gray-100)',
+  			'gray-200': 'var(--gray-200)',
+  			'gray-300': 'var(--gray-300)',
+  			'gray-400': 'var(--gray-400)',
+  			'gray-500': 'var(--gray-500)',
+  			'gray-600': 'var(--gray-600)',
+  			'gray-700': 'var(--gray-700)',
+  			
+  			// ─── Semantic Aliases ───────────────────────────────────
+  			'text-primary': 'var(--text-primary)',
+  			'text-secondary': 'var(--text-secondary)',
+  			'text-inverse': 'var(--text-inverse)',
+  			
+  			// ─── shadcn/ui System Colors ────────────────────────────
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

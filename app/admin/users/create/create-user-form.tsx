@@ -11,6 +11,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import {
   Select,
   SelectContent,
@@ -46,7 +47,8 @@ export default function CreateUserForm() {
     defaultValues: {
       name: '',
       email: '',
-      role: 'ventas',
+      phone_number: '',
+      role: 'admin' as 'admin' | 'ventas',
     },
   });
 
@@ -55,12 +57,7 @@ export default function CreateUserForm() {
     setDebugInfo(null);
     
     try {
-      console.log("Creating user with values:", {
-        name: values.name,
-        email: values.email,
-        role: values.role,
-        usePassword,
-      });
+
       
       let res;
       if (usePassword && password) {
@@ -68,7 +65,8 @@ export default function CreateUserForm() {
         res = await createUserSimple({
           name: values.name,
           email: values.email,
-          role: values.role as 'admin' | 'ventas',
+          phone_number: values.phone_number || '',
+          role: values.role as 'admin' | 'user',
           password: password,
         });
       } else {
@@ -76,11 +74,12 @@ export default function CreateUserForm() {
         res = await createUser({
           name: values.name,
           email: values.email,
-          role: values.role as 'admin' | 'ventas',
+          phone_number: values.phone_number || '',
+          role: values.role as 'admin' | 'user',
         });
       }
 
-      console.log("Server response:", res);
+
 
       if (!res.success) {
         setDebugInfo(res.message || "Unknown error");
@@ -107,7 +106,6 @@ export default function CreateUserForm() {
         router.refresh();
       }, 1000);
     } catch (error) {
-      console.error("Form submission error:", error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setDebugInfo(errorMessage);
       
@@ -146,7 +144,7 @@ export default function CreateUserForm() {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" {...field} />
+                <Input placeholder="John Doe" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -163,7 +161,28 @@ export default function CreateUserForm() {
                 An invitation email will be sent to this address.
               </FormDescription>
               <FormControl>
-                <Input type="email" placeholder="john@example.com" {...field} />
+                <Input type="email" placeholder="john@example.com" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone_number"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone Number</FormLabel>
+              <FormDescription>
+                Optional phone number for the user.
+              </FormDescription>
+              <FormControl>
+                <PhoneInput 
+                  className="border-2 border-gray-300 focus:border-blue-500" 
+                  value={field.value}
+                  onChange={field.onChange}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -181,7 +200,7 @@ export default function CreateUserForm() {
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                 </FormControl>
@@ -227,7 +246,7 @@ export default function CreateUserForm() {
                       placeholder="Temporary password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-2"
+                      className="mt-2 border-2 border-gray-300 focus:border-blue-500"
                     />
                     <p className="text-xs mt-1 text-amber-600">
                       Password must be at least 6 characters. The user can change it later.

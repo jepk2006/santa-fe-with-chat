@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PhoneInput } from '@/components/ui/phone-input';
 import {
   Select,
   SelectContent,
@@ -41,6 +42,7 @@ const UpdateUserForm = ({
       id: user.id,
       name: user.name || '',
       email: user.email || '',
+      phone_number: user.phone_number || '',
       role: user.role || 'ventas',
     },
   });
@@ -51,6 +53,7 @@ const UpdateUserForm = ({
         id: user.id,
         name: values.name,
         email: values.email,
+        phone_number: values.phone_number,
         role: values.role,
       });
 
@@ -98,6 +101,7 @@ const UpdateUserForm = ({
                   <Input
                     disabled={true}
                     placeholder='Enter user email'
+                    className="border-2 border-gray-300"
                     {...field}
                   />
                 </FormControl>
@@ -121,7 +125,33 @@ const UpdateUserForm = ({
             <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder='Enter user name' {...field} />
+                  <Input placeholder='Enter user name' className="border-2 border-gray-300 focus:border-blue-500" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+        {/* Phone Number */}
+          <FormField
+            control={form.control}
+            name='phone_number'
+            render={({
+              field,
+            }: {
+              field: ControllerRenderProps<
+                z.infer<typeof updateUserSchema>,
+                'phone_number'
+              >;
+            }) => (
+            <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <PhoneInput 
+                    className="border-2 border-gray-300 focus:border-blue-500" 
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -147,7 +177,7 @@ const UpdateUserForm = ({
                 defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
                       <SelectValue placeholder='Select a role' />
                     </SelectTrigger>
                   </FormControl>

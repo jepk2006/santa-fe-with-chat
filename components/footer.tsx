@@ -23,25 +23,7 @@ const Footer = async () => {
     return (
       <footer className='border-t'>
         <div className='container py-8 md:py-12 relative'>
-          {!user && (
-            <div className='absolute right-4 bottom-4'>
-              <Button 
-                asChild 
-                variant='ghost' 
-                className='bg-transparent hover:bg-secondary text-xs text-muted-foreground'
-              >
-                <Link href='/login'>
-                  Staff Login
-                </Link>
-              </Button>
-            </div>
-          )}
-          
-          {user && (
-            <div className='absolute right-4 bottom-4'>
-              <LogoutButton />
-            </div>
-          )}
+          {/* Removed logout button from footer */}
           
           <div className='mt-8 text-center text-sm text-muted-foreground'>
             <p>

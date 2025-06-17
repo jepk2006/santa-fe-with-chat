@@ -1,14 +1,18 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { CheckoutDialog } from '@/components/checkout/checkout-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
-import { useState, useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useRouter } from 'next/navigation';
+import { User } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase-client';
+import CheckoutDialog from '@/components/shared/checkout-dialog';
+import DeliveryPromoBanner from '@/components/shared/delivery-promo-banner';
 
 function isWeightBasedItem(item: any) {
   // Check both camelCase and snake_case properties for backward compatibility
@@ -17,20 +21,29 @@ function isWeightBasedItem(item: any) {
 }
 
 export function CartClient() {
-  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { items, updateQuantity, removeItem, clearCart, updateWeight } = useCart();
+  const [isCheckoutDialogOpen, setCheckoutDialogOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evt, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const total = items.reduce(
     (sum, item) => sum + item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity),
     0
   );
-
-  const handleCheckout = () => {
-    // Open checkout dialog directly without saving cart
-    setIsCheckoutOpen(true);
-  };
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -56,6 +69,14 @@ export function CartClient() {
     });
   };
 
+  const handleCheckout = () => {
+    if (user) {
+      router.push('/checkout');
+    } else {
+      setCheckoutDialogOpen(true);
+    }
+  };
+
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
@@ -72,6 +93,13 @@ export function CartClient() {
 
   return (
     <div className="container py-8">
+      <DeliveryPromoBanner 
+        currentTotal={total} 
+        variant="cart" 
+        showCloseButton={false}
+        className="mb-6 rounded-lg"
+      />
+
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Shopping Cart</h1>
         <Button
@@ -236,21 +264,9 @@ export function CartClient() {
           </div>
         </div>
       </div>
-
       <CheckoutDialog
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        items={items.map(item => ({
-          ...item,
-          selling_method: item.selling_method || 'unit',
-          weight_unit: (item.weight_unit === 'g' || 
-                        item.weight_unit === 'kg' || 
-                        item.weight_unit === 'lb' || 
-                        item.weight_unit === 'oz') 
-                        ? item.weight_unit 
-                        : 'kg'
-        }))}
-        total={total}
+        isOpen={isCheckoutDialogOpen}
+        onClose={() => setCheckoutDialogOpen(false)}
       />
     </div>
   );

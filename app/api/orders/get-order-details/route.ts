@@ -35,31 +35,14 @@ export async function POST(request: Request) {
       formattedPhone.substring(0, 1) + " " + formattedPhone.substring(1),  // 7 1234567
       `(${formattedPhone.substring(0,1)}) ${formattedPhone.substring(1)}`,  // (7) 1234567
     ];
-    
-    console.log('Getting order details for:', { orderId, phoneVariants });
 
     try {
       // Check if we're dealing with a UUID or simplified ID
       const orderIdTrimmed = String(orderId).trim();
       let matchedOrderId = null;
       
-      // First, get all orders to see what we actually have in the database (for debugging)
-      const { data: allOrdersDebug, error: allOrdersDebugError } = await supabaseAdmin
-        .from(SUPABASE_TABLES.ORDERS)
-        .select('id, simplified_id, phone_number')
-        .limit(10);
-        
-      console.log('Debug - Sample orders in database:', 
-        allOrdersDebug?.map(o => ({ 
-          id: o.id.substring(0, 8) + '...', 
-          simplified_id: o.simplified_id,
-          phone: o.phone_number
-        }))
-      );
-      
       // If it's a UUID, try direct matching first
       if (UUID_REGEX.test(orderIdTrimmed)) {
-        console.log('Searching by UUID');
         const result = await supabaseAdmin
           .from(SUPABASE_TABLES.ORDERS)
           .select('id')
@@ -68,7 +51,6 @@ export async function POST(request: Request) {
         
         if (result.data) {
           matchedOrderId = result.data.id;
-          console.log('Found order by UUID directly:', matchedOrderId);
         }
       } 
       
@@ -82,7 +64,6 @@ export async function POST(request: Request) {
           .limit(100);
         
         if (allOrdersError) {
-          console.error('Error fetching orders for search:', allOrdersError);
           return NextResponse.json(
             { message: 'Error al buscar pedidos: ' + allOrdersError.message },
             { status: 500 }
@@ -90,14 +71,11 @@ export async function POST(request: Request) {
         }
         
         if (!allOrders || allOrders.length === 0) {
-          console.log('No orders found in database');
           return NextResponse.json(
             { message: 'No se encontró ningún pedido' },
             { status: 404 }
           );
         }
-        
-        console.log(`Found ${allOrders.length} orders to search through`);
         
         // Function to check if phone numbers match (allowing for formatting differences)
         const phoneMatches = (dbPhone: string | null, inputPhone: string | null): boolean => {
@@ -122,7 +100,6 @@ export async function POST(request: Request) {
         );
         
         if (matchedOrder) {
-          console.log(`Found exact simplified_id match: ${matchedOrder.simplified_id} with phone ${matchedOrder.phone_number}`);
           matchedOrderId = matchedOrder.id;
         } else {
           // 2. Case-insensitive simplified_id match
@@ -133,7 +110,6 @@ export async function POST(request: Request) {
           );
           
           if (matchedOrder) {
-            console.log(`Found case-insensitive simplified_id match: ${matchedOrder.simplified_id}`);
             matchedOrderId = matchedOrder.id;
           } else {
             // 3. Partial simplified_id match
@@ -145,7 +121,6 @@ export async function POST(request: Request) {
             );
             
             if (matchedOrder) {
-              console.log(`Found partial simplified_id match: ${matchedOrder.simplified_id}`);
               matchedOrderId = matchedOrder.id;
             } else {
               // 4. UUID match
@@ -155,7 +130,6 @@ export async function POST(request: Request) {
               );
               
               if (matchedOrder) {
-                console.log(`Found UUID match: ${matchedOrder.id}`);
                 matchedOrderId = matchedOrder.id;
               }
             }
@@ -165,7 +139,6 @@ export async function POST(request: Request) {
 
       // If no order found with any matching method
       if (!matchedOrderId) {
-        console.log('No matching order found');
         return NextResponse.json(
           { message: 'No autorizado: El pedido no existe o el número telefónico no coincide' },
           { status: 403 }
@@ -173,8 +146,6 @@ export async function POST(request: Request) {
       }
 
       // Now fetch the full order details with order items
-      console.log('Fetching full details for order:', matchedOrderId);
-      
       const { data: order, error: detailsError } = await supabaseAdmin
         .from(SUPABASE_TABLES.ORDERS)
         .select('*')
@@ -182,7 +153,6 @@ export async function POST(request: Request) {
         .single();
 
       if (detailsError) {
-        console.error('Error fetching order details:', detailsError);
         return NextResponse.json(
           { message: 'Error al obtener detalles del pedido' },
           { status: 500 }
@@ -196,7 +166,6 @@ export async function POST(request: Request) {
         .eq('order_id', matchedOrderId);
 
       if (itemsError) {
-        console.error('Error fetching order items:', itemsError);
         return NextResponse.json(
           { message: 'Error al obtener los artículos del pedido' },
           { status: 500 }
@@ -214,17 +183,15 @@ export async function POST(request: Request) {
         order: fullOrder
       });
     } catch (dbError) {
-      console.error('Database error in get-order-details:', dbError);
       return NextResponse.json(
         { message: 'Error de la base de datos al obtener los detalles del pedido' },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Unexpected error fetching order details:', error);
     return NextResponse.json(
       { message: 'Error del servidor al procesar la solicitud' },
       { status: 500 }
     );
   }
-} 
+}

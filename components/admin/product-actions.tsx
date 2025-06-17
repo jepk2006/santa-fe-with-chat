@@ -49,7 +49,6 @@ export function ProductActions({ product }: ProductActionsProps) {
       toast.success('Product deleted successfully');
       router.refresh();
     } catch (error) {
-      console.error('Error deleting product:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to delete product');
     } finally {
       setIsDeleting(false);

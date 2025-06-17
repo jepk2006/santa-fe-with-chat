@@ -6,7 +6,7 @@ import {
 } from '@/lib/actions/product.actions';
 import Link from 'next/link';
 import { Metadata } from 'next';
-import { Sliders, ChevronDown, ChevronUp, Check, X, DollarSign, Star, Filter } from 'lucide-react';
+import { Sliders, ChevronDown, ChevronUp, Check, X, Filter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Accordion,
@@ -29,6 +29,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Product } from '@/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 /* ---------- helpers ---------- */
 const prices = [
@@ -81,8 +82,8 @@ ${isRatingSet ? `: Rating ${rating}` : ''}`
   };
 }
 
-export default async function ProductsPage({ searchParams }: { searchParams: SearchParams }) {
-  const searchParamsObj = await Promise.resolve(searchParams);
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
+  const searchParamsObj = await searchParams;
   const {
     q = 'all',
     category = 'all',
@@ -161,8 +162,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
     return (
       <Accordion type="multiple" defaultValue={[]} className={`space-y-2 ${className}`}>
         {/* Categories Accordion */}
-        <AccordionItem value="categories" className="border rounded-lg">
-          <AccordionTrigger className="px-4 hover:no-underline hover:bg-secondary rounded-t-lg group">
+        <AccordionItem value="categories" className="border-b">
+          <AccordionTrigger className="py-3 w-full flex justify-between items-center text-base font-semibold hover:text-black">
             <div className="flex justify-between items-center w-full pr-2">
               <span className="font-medium">Categories</span>
               {category !== 'all' && category !== '' && (
@@ -172,28 +173,21 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
               )}
             </div>
           </AccordionTrigger>
-          <AccordionContent className="px-0">
+          <AccordionContent className="px-0 pb-3">
             <div className="px-2 py-1 space-y-1 max-h-60 overflow-y-auto scrollbar-thin">
               <Link
                 href={getFilterUrl({ c: 'all' })}
-                className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${(category === 'all' || category === '') ? 'bg-accent font-medium text-accent-foreground' : ''}`}
+                className={`block px-3 py-1.5 rounded-md hover:bg-blue-100 text-base ${(category === 'all' || category === '') ? 'bg-accent font-bold text-accent-foreground' : 'font-medium'}`}
               >
-                {(category === 'all' || category === '') && (
-                  <Check className="h-4 w-4 mr-2 flex-shrink-0" />
-                )}
-                <span className={category === 'all' || category === '' ? 'ml-0' : 'ml-6'}>All Categories</span>
+                All Categories
               </Link>
               
               {categories.map((x) => (
                 <Link
                   key={x.category}
                   href={getFilterUrl({ c: x.category })}
-                  className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${category === x.category ? 'bg-accent font-medium text-accent-foreground' : ''}`}
-                >
-                  {category === x.category && (
-                    <Check className="h-4 w-4 mr-2 flex-shrink-0" />
-                  )}
-                  <span className={category === x.category ? 'ml-0' : 'ml-6'}>{x.category}</span>
+                  className={`block px-3 py-1.5 rounded-md hover:bg-blue-100 text-base ${category === x.category ? 'bg-accent font-bold text-accent-foreground' : 'font-medium'}`}>
+                  {x.category}
                 </Link>
               ))}
             </div>
@@ -201,15 +195,13 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
         </AccordionItem>
         
         {/* Price Accordion */}
-        <AccordionItem value="price" className="border rounded-lg">
-          <AccordionTrigger className="px-4 hover:no-underline hover:bg-secondary rounded-t-lg group">
+        <AccordionItem value="price" className="border-b first:border-t">
+          <AccordionTrigger className="py-3 w-full flex justify-between items-center text-base font-semibold hover:text-black">
             <div className="flex justify-between items-center w-full pr-2">
-              <span className="font-medium flex items-center gap-1">
-                <DollarSign className="h-4 w-4" /> Price
-              </span>
+              <span className="font-medium">Price</span>
               {price !== 'all' && (
                 <span className="text-xs text-muted-foreground flex-shrink-0 group-data-[state=open]:hidden">
-                  {prices.find(p => p.value === price)?.name || price}
+                  {prices.find((p) => p.value === price)?.name || price}
                 </span>
               )}
             </div>
@@ -218,7 +210,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
             <div className="px-2 py-1 space-y-1">
               <Link
                 href={getFilterUrl({ p: 'all' })}
-                className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${price === 'all' ? 'bg-accent font-medium text-accent-foreground' : ''}`}
+                className={`flex items-center px-3 py-1.5 rounded-md hover:bg-blue-100 text-base ${price === 'all' ? 'bg-accent font-bold text-accent-foreground' : 'font-medium'}`}
               >
                 {price === 'all' && (
                   <Check className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -230,62 +222,12 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
                 <Link
                   key={p.value}
                   href={getFilterUrl({ p: p.value })}
-                  className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${price === p.value ? 'bg-accent font-medium text-accent-foreground' : ''}`}
+                  className={`flex items-center px-3 py-1.5 rounded-md hover:bg-blue-100 text-base ${price === p.value ? 'bg-accent font-bold text-accent-foreground' : 'font-medium'}`}
                 >
                   {price === p.value && (
                     <Check className="h-4 w-4 mr-2 flex-shrink-0" />
                   )}
                   <span className={price === p.value ? 'ml-0' : 'ml-6'}>{p.name}</span>
-                </Link>
-              ))}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-        
-        {/* Rating Accordion */}
-        <AccordionItem value="rating" className="border rounded-lg">
-          <AccordionTrigger className="px-4 hover:no-underline hover:bg-secondary rounded-t-lg group">
-            <div className="flex justify-between items-center w-full pr-2">
-              <span className="font-medium flex items-center gap-1">
-                <Star className="h-4 w-4" /> Rating
-              </span>
-              {rating !== 'all' && (
-                <span className="text-xs text-muted-foreground flex-shrink-0 flex items-center group-data-[state=open]:hidden">
-                  {Array(parseInt(rating)).fill(0).map((_, i) => (
-                    <Star key={i} className="inline h-3 w-3 fill-primary text-primary" />
-                  ))}
-                  <span className="ml-1">&amp; up</span>
-                </span>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent className="px-0">
-            <div className="px-2 py-1 space-y-1">
-              <Link
-                href={getFilterUrl({ r: 'all' })}
-                className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${rating === 'all' ? 'bg-accent font-medium text-accent-foreground' : ''}`}
-              >
-                {rating === 'all' && (
-                  <Check className="h-4 w-4 mr-2 flex-shrink-0" />
-                )}
-                <span className={rating === 'all' ? 'ml-0' : 'ml-6'}>Any Rating</span>
-              </Link>
-              
-              {ratings.map((r) => (
-                <Link
-                  key={r}
-                  href={getFilterUrl({ r: `${r}` })}
-                  className={`flex items-center px-3 py-1.5 rounded-md hover:bg-secondary ${rating === r.toString() ? 'bg-accent font-medium text-accent-foreground' : ''}`}
-                >
-                  {rating === r.toString() && (
-                    <Check className="h-4 w-4 mr-2 flex-shrink-0" />
-                  )}
-                  <span className={rating === r.toString() ? 'ml-0' : 'ml-6'}>
-                    {Array(r).fill(0).map((_, i) => (
-                      <Star key={i} className="inline h-3.5 w-3.5 fill-primary text-primary" />
-                    ))}
-                    <span className="ml-1">{`& up`}</span>
-                  </span>
                 </Link>
               ))}
             </div>
@@ -397,18 +339,15 @@ export default async function ProductsPage({ searchParams }: { searchParams: Sea
         
         {/* ------------- Sidebar filters (desktop) ------------- */}
         <div className='hidden lg:block w-72 flex-shrink-0'>
-          <Card className="sticky top-24">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Sliders className="h-5 w-5" /> 
-                Filters
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">
-                Click on a section to expand filter options
-              </p>
+          <Card className="sticky top-24 max-h-[calc(100vh-8rem)]">
+            <CardHeader className="pb-4 border-b">
+              <h2 className="text-lg font-semibold">Filtros</h2>
             </CardHeader>
-            <CardContent className="pb-6">
-              <FilterAccordion />
+            <CardContent className="p-0">
+              {/* Scrollable accordion */}
+              <ScrollArea className="px-4 py-6">
+                <FilterAccordion />
+              </ScrollArea>
             </CardContent>
           </Card>
         </div>

@@ -43,11 +43,11 @@ const statusIcons = {
 };
 
 const statusColors = {
-  pending: 'bg-blue-100 text-blue-800',
-  paid: 'bg-purple-100 text-purple-800',
-  shipped: 'bg-yellow-100 text-yellow-800',
-  delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  pending: 'bg-blue-100 text-blue-dark',
+  paid: 'bg-blue-200 text-blue-dark',
+  shipped: 'bg-blue-300 text-brand-white',
+  delivered: 'bg-blue-400 text-brand-white',
+  cancelled: 'bg-red-100 text-red-dark',
 };
 
 interface OrderDetailsClientProps {
@@ -70,7 +70,6 @@ export function OrderDetailsClient({ params, searchParams }: OrderDetailsClientP
 
   useEffect(() => {
     const fetchOrderDetails = async () => {
-      // If no phone number in URL, redirect to tracking page
       if (!phoneNumber) {
         router.push('/order');
         return;
@@ -79,7 +78,6 @@ export function OrderDetailsClient({ params, searchParams }: OrderDetailsClientP
       try {
         setIsLoading(true);
         
-        // Fetch order details with verification
         const response = await fetch('/api/orders/get-order-details', {
           method: 'POST',
           headers: {
@@ -99,10 +97,8 @@ export function OrderDetailsClient({ params, searchParams }: OrderDetailsClientP
         const data = await response.json();
         setOrder(data.order);
       } catch (err) {
-        console.error('Error fetching order:', err);
         setError(err instanceof Error ? err.message : 'Error al cargar los detalles del pedido');
         
-        // Redirect back to tracking on auth failure after a delay
         setTimeout(() => {
           router.push('/order');
         }, 3000);
@@ -158,12 +154,10 @@ export function OrderDetailsClient({ params, searchParams }: OrderDetailsClientP
     );
   }
 
-  // Get the appropriate status icon
   const StatusIcon = order.status && statusIcons[order.status as keyof typeof statusIcons] 
     ? statusIcons[order.status as keyof typeof statusIcons] 
     : Clock;
 
-  // Get the appropriate status color
   const statusColor = order.status && statusColors[order.status as keyof typeof statusColors]
     ? statusColors[order.status as keyof typeof statusColors]
     : 'bg-gray-100 text-gray-800';

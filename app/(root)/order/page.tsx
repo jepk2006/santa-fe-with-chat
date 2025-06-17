@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createBrowserClient } from '@supabase/ssr';
 
 export default function TrackOrderPage() {
   const router = useRouter();
@@ -16,6 +17,19 @@ export default function TrackOrderPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect signed-in users to /account
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        router.replace('/account');
+      }
+    });
+  }, [router]);
 
   // Function to handle and format the order ID input
   const handleOrderIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +169,7 @@ export default function TrackOrderPage() {
               <div className="relative">
                 <Input
                   id="orderId"
-                  className="pl-10 py-6 text-lg"
+                  className="pl-10 py-6 text-lg border-2 border-gray-300 focus:border-blue-500 rounded-md"
                   placeholder="ORD-12345678"
                   value={orderId}
                   onChange={handleOrderIdChange}
@@ -175,7 +189,7 @@ export default function TrackOrderPage() {
               <Input
                 id="phoneNumber"
                 type="tel"
-                className="py-6 text-lg"
+                className="py-6 text-lg border-2 border-gray-300 focus:border-blue-500 rounded-md"
                 placeholder="(7) 123-4567"
                 value={phoneNumber}
                 onChange={handlePhoneChange}

@@ -40,16 +40,13 @@ export async function createUser(userData: {
   email: string; 
   password?: string;
   name: string; 
-  role: 'admin' | 'ventas' 
+  phone_number?: string;
+  role: 'admin' | 'user' 
 }) {
   try {
-    console.log('Starting user creation process for:', userData.email);
-    
     // Generate a random temporary password if none is provided
     const temporaryPassword = userData.password || 
       Array(20).fill(0).map(() => Math.random().toString(36).charAt(2)).join('');
-    
-    console.log('Creating auth user...');
     
     // First create the auth user with the temporary password
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -58,41 +55,27 @@ export async function createUser(userData: {
       email_confirm: true
     });
 
-    if (authError) {
-      console.error('Auth user creation error:', authError);
-      throw authError;
-    }
-
-    if (!authData.user) {
-      console.error('No user data returned from auth creation');
-      throw new Error('Failed to create user');
-    }
-
-    console.log('Auth user created successfully, updating user profile...');
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Failed to create user');
 
     // Then add additional user data to the users table
     const { data, error } = await supabaseAdmin
       .from('users')
       .update({
         name: userData.name,
+        phone_number: userData.phone_number || null,
         role: userData.role
       })
       .eq('id', authData.user.id)
       .select()
       .single();
 
-    if (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log('User profile updated successfully');
     let passwordResetMessage = 'User created successfully';
     
     // Generate a password reset link if no password was provided
     if (!userData.password) {
-      console.log('Generating password reset link...');
-      
       try {
         // Get the full site URL from environment or use localhost in development
         const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3002';
@@ -108,7 +91,6 @@ export async function createUser(userData: {
         });
 
         if (resetError) {
-          console.error('Error generating password reset link:', resetError);
           return {
             success: true,
             message: 'User created successfully, but failed to generate password reset link: ' + resetError.message,
@@ -117,7 +99,6 @@ export async function createUser(userData: {
         }
 
         if (!resetData || !resetData.properties || !resetData.properties.action_link) {
-          console.error('No reset link generated');
           return {
             success: true,
             message: 'User created successfully, but no password reset link was generated',
@@ -126,14 +107,8 @@ export async function createUser(userData: {
         }
 
         const resetLink = resetData.properties.action_link;
-        console.log('Password reset link generated successfully');
-        console.log('\n------------------------');
-        console.log('PASSWORD RESET LINK:');
-        console.log(resetLink);
-        console.log('------------------------\n');
-        
+
         // Send the password setup email
-        console.log('Sending password setup email...');
         const emailResult = await sendPasswordSetupEmail(
           userData.email,
           userData.name,
@@ -143,10 +118,8 @@ export async function createUser(userData: {
         passwordResetMessage = emailResult.success
           ? 'User created successfully. A password setup email has been sent.'
           : 'User created successfully, but failed to send password setup email. ' + emailResult.message;
-          
-        console.log('Email sending result:', emailResult);
+
       } catch (resetError) {
-        console.error('Exception while generating reset link:', resetError);
         return {
           success: true,
           message: 'User created successfully, but failed to process the password reset: ' + 
@@ -156,7 +129,6 @@ export async function createUser(userData: {
       }
     }
 
-    console.log('User creation process completed');
     revalidatePath('/admin/users');
     return {
       success: true,
@@ -164,7 +136,6 @@ export async function createUser(userData: {
       data
     };
   } catch (error) {
-    console.error('Error creating user:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to create user'
@@ -174,8 +145,6 @@ export async function createUser(userData: {
 
 // Delete a user
 export async function deleteUser(id: string) {
-  console.log('Attempting to delete user with ID:', id);
-  
   try {
     // Use supabaseAdmin instead of supabase to have proper permissions
     const { error } = await supabaseAdmin
@@ -183,20 +152,13 @@ export async function deleteUser(id: string) {
       .delete()
       .eq('id', id);
 
-    if (error) {
-      console.error('Error deleting user from users table:', error);
-      throw error;
-    }
+    if (error) throw error;
     
     // Also delete the auth user
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id);
     
-    if (authError) {
-      console.error('Error deleting auth user:', authError);
-      throw authError;
-    }
-    
-    console.log('User deleted successfully:', id);
+    if (authError) throw authError;
+
     revalidatePath('/admin/users');
     
     return {
@@ -204,7 +166,6 @@ export async function deleteUser(id: string) {
       message: 'User deleted successfully',
     };
   } catch (error) {
-    console.error('Error in deleteUser function:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to delete user',
@@ -220,6 +181,7 @@ export async function updateUser(user: z.infer<typeof updateUserSchema>) {
       .update({
         name: user.name,
         email: user.email,
+        phone_number: user.phone_number || null,
         role: user.role,
       })
       .eq('id', user.id)
@@ -269,12 +231,11 @@ export async function updateUserAddress(address: any) {
 export async function createUserSimple(userData: { 
   email: string; 
   name: string; 
-  role: 'admin' | 'ventas',
+  phone_number?: string;
+  role: 'admin' | 'user',
   password: string
 }) {
   try {
-    console.log('Starting simple user creation process for:', userData.email);
-
     // Create the auth user with the provided password
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: userData.email,
@@ -282,35 +243,23 @@ export async function createUserSimple(userData: {
       email_confirm: true
     });
 
-    if (authError) {
-      console.error('Auth user creation error:', authError);
-      throw authError;
-    }
-
-    if (!authData.user) {
-      console.error('No user data returned from auth creation');
-      throw new Error('Failed to create user');
-    }
-
-    console.log('Auth user created successfully, updating user profile...');
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Failed to create user');
 
     // Add additional user data to the users table
     const { data, error } = await supabaseAdmin
       .from('users')
       .update({
         name: userData.name,
+        phone_number: userData.phone_number || null,
         role: userData.role
       })
       .eq('id', authData.user.id)
       .select()
       .single();
 
-    if (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
-    }
+    if (error) throw error;
 
-    console.log('User profile updated successfully');
     revalidatePath('/admin/users');
     
     return {
@@ -319,7 +268,6 @@ export async function createUserSimple(userData: {
       data
     };
   } catch (error) {
-    console.error('Error creating user with simple method:', error);
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to create user'

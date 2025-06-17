@@ -33,7 +33,19 @@ const nextConfig = {
       static: 180,
     },
   },
-  serverExternalPackages: ['@supabase/ssr', '@supabase/auth-helpers-nextjs'],
+  webpack: (config, { isServer }) => {
+    // Suppress specific warning for @supabase/realtime-js dynamic imports
+    config.module.rules.push({
+      test: /node_modules\/@supabase\/realtime-js/,
+      parser: {
+        javascript: {
+          unknownContextCritical: false,
+        },
+      },
+    });
+    
+    return config;
+  },
   async redirects() {
     return [
       {
@@ -70,20 +82,6 @@ const nextConfig = {
       },
     ];
   },
-  // Fix for Radix UI bundling issue
-  transpilePackages: [
-    '@radix-ui/react-accordion',
-    '@radix-ui/react-alert-dialog',
-    '@radix-ui/react-checkbox',
-    '@radix-ui/react-dialog',
-    '@radix-ui/react-dropdown-menu',
-    '@radix-ui/react-label',
-    '@radix-ui/react-radio-group',
-    '@radix-ui/react-select',
-    '@radix-ui/react-slot',
-    '@radix-ui/react-toast',
-    '@radix-ui/primitive',
-  ],
 };
 
 module.exports = nextConfig; 

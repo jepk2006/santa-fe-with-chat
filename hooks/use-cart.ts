@@ -21,12 +21,14 @@ interface CartStore {
   clearCart: () => void;
   updateQuantity: (id: string, quantity: number) => void;
   updateWeight: (id: string, weight: number) => void;
+  setItems: (items: CartItem[]) => void;
 }
 
 export const useCart = create<CartStore>()(
   persist(
     (set) => ({
       items: [],
+      setItems: (items) => set({ items }),
       addItem: (item) =>
         set((state) => {
           const existingItem = state.items.find((i) => i.id === item.id);
