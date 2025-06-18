@@ -102,13 +102,13 @@ export default function ContactPage() {
                     <div className="flex items-center gap-2 text-gray-600">
                       <PhoneCall className="h-4 w-4 flex-shrink-0" />
                       <div>
-                        {location.phones.landline.map((phone, index) => (
+                        {location.phones.landline?.map((phone, index) => (
                           <a 
                             key={phone} 
                             href={`tel:+591${phone.replace(/\D/g, '')}`}
                             className="text-blue-600 hover:text-blue-800"
                           >
-                            {phone}{index < location.phones.landline.length - 1 ? ' / ' : ''}
+                            {phone}{index < (location.phones.landline?.length ?? 0) - 1 ? ' / ' : ''}
                           </a>
                         ))}
                       </div>

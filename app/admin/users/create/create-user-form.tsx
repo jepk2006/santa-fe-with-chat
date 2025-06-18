@@ -231,9 +231,9 @@ export default function CreateUserForm() {
           <div className="space-y-4 p-4 border rounded-lg bg-yellow-50">
             <div className="flex items-center space-x-2">
                   <Checkbox 
-                id="usePassword" 
+                    id="usePassword" 
                     checked={usePassword}
-                onCheckedChange={setUsePassword}
+                    onCheckedChange={(checked) => setUsePassword(checked === true)}
                   />
               <label htmlFor="usePassword" className="text-sm font-medium">
                 Usar contraseña manual en lugar de invitación por correo
