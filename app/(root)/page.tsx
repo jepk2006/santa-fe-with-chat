@@ -28,13 +28,6 @@ export const metadata: Metadata = {
   }
 };
 
-// Add cache control headers
-export const headers = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-  'Pragma': 'no-cache',
-  'Expires': '0',
-};
-
 export default async function Homepage() {
   // Fetch fresh data on every request
   const [latestProducts, featuredProducts] = await Promise.all([
