@@ -33,10 +33,10 @@ export default function CheckoutDialog({ isOpen, onClose }: CheckoutDialogProps)
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Checkout Options</DialogTitle>
+          <DialogTitle>Opciones de Compra</DialogTitle>
           <DialogDescription>
-            You can continue as a guest or create an account to save your
-            details for future orders.
+            Puedes continuar como invitado o crear una cuenta para guardar tus
+            datos para futuras compras.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -46,10 +46,10 @@ export default function CheckoutDialog({ isOpen, onClose }: CheckoutDialogProps)
               variant="outline"
               className="w-full"
             >
-              Continue as Guest
+              Continuar como Invitado
             </Button>
             <Button onClick={handleCreateAccount} className="w-full">
-              Create an Account
+              Crear una Cuenta
             </Button>
           </div>
         </DialogFooter>

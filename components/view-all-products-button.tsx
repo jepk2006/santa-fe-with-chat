@@ -3,9 +3,9 @@ import Link from 'next/link';
 
 const ViewAllProductsButton = () => {
   return (
-    <div className='flex justify-center items-center my-6 sm:my-8'>
-      <Button asChild className='px-6 py-3 sm:px-8 sm:py-4 text-base sm:text-lg font-semibold'>
-        <Link href='/products'>View All Products</Link>
+    <div className='flex items-center justify-center'>
+      <Button asChild variant='default' className='w-fit'>
+        <Link href='/products'>Ver Todos los Productos</Link>
       </Button>
     </div>
   );

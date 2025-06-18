@@ -85,14 +85,6 @@ export default function DeliveryPromoPopup() {
                 <ShoppingBag className="h-5 w-5 mr-2" />
                 Comprar Ahora
               </Button>
-              
-              <Button 
-                onClick={handleClose}
-                variant="ghost"
-                className="w-full text-gray-500"
-              >
-                Cerrar
-              </Button>
             </div>
           </div>
         </div>

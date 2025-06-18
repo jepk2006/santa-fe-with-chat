@@ -80,12 +80,12 @@ export function CartClient() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
-        <h2 className="text-2xl font-semibold">Your cart is empty</h2>
+        <h2 className="text-2xl font-semibold">Tu carrito está vacío</h2>
         <p className="text-muted-foreground">
-          Looks like you haven&apos;t added any items to your cart yet.
+          Parece que aún no has agregado ningún artículo a tu carrito.
         </p>
         <Button asChild>
-          <a href="/products">Continue Shopping</a>
+          <a href="/products">Continuar Comprando</a>
         </Button>
       </div>
     );
@@ -101,14 +101,14 @@ export function CartClient() {
       />
 
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Shopping Cart</h1>
+        <h1 className="text-3xl font-bold">Carrito de Compras</h1>
         <Button
           variant="destructive"
           onClick={handleClearCart}
           className="flex items-center gap-2"
         >
           <Trash2 className="h-4 w-4" />
-          Clear Cart
+          Vaciar Carrito
         </Button>
       </div>
 
@@ -158,6 +158,7 @@ export function CartClient() {
                         size="icon"
                         onClick={() => handleWeightChange(item.id, Math.max(0.1, (item.weight || 1) - 0.5))}
                         disabled={(item.weight || 1) <= 0.5}
+                        className="border border-gray-200 rounded-md h-8 w-8"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -179,6 +180,7 @@ export function CartClient() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleWeightChange(item.id, (item.weight || 1) + 0.5)}
+                        className="border border-gray-200 rounded-md h-8 w-8"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -190,6 +192,7 @@ export function CartClient() {
                         size="icon"
                         onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
+                        className="border border-gray-200 rounded-md h-8 w-8"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -216,6 +219,7 @@ export function CartClient() {
                         variant="outline"
                         size="icon"
                         onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                        className="border border-gray-200 rounded-md h-8 w-8"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
@@ -229,7 +233,7 @@ export function CartClient() {
 
         <div className="space-y-4">
           <div className="p-4 border rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+            <h2 className="text-lg font-semibold mb-4">Resumen del Pedido</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 {items.map((item) => (
@@ -259,7 +263,7 @@ export function CartClient() {
               onClick={handleCheckout}
               disabled={isPending}
             >
-              {isPending ? 'Processing...' : 'Checkout'}
+              {isPending ? 'Procesando...' : 'Finalizar Compra'}
             </Button>
           </div>
         </div>

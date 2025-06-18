@@ -113,8 +113,8 @@ export function AddressMap({ onAddressSelect, initialAddress }: AddressMapProps)
     }
   }, [initialAddress, isLoaded]);
 
-  if (loadError) return <div>Error loading maps. Please ensure your API key is correct.</div>;
-  if (!isLoaded) return <div>Loading Map...</div>;
+  if (loadError) return <div>Error al cargar el mapa. Por favor, verifique su clave API.</div>;
+  if (!isLoaded) return <div>Cargando mapa...</div>;
 
   return (
     <div className="space-y-4">

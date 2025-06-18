@@ -525,21 +525,21 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
             name="selling_method"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Selling Method</FormLabel>
+                <FormLabel>Método de Venta</FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
                 >
                   <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
-                    <SelectValue placeholder="Select selling method" />
+                    <SelectValue placeholder="Selecciona el método de venta" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unit">By Unit</SelectItem>
-                    <SelectItem value="weight">By Weight</SelectItem>
+                    <SelectItem value="unit">Por Unidad</SelectItem>
+                    <SelectItem value="weight">Por Peso</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  How this product is sold - by unit or by weight
+                  Cómo se vende este producto - por unidad o por peso
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -553,21 +553,21 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                 name="weight_unit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Weight Unit</FormLabel>
+                    <FormLabel>Unidad de Peso</FormLabel>
                     <Select
                       value={field.value || ''}
                       onValueChange={field.onChange}
                     >
                       <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
-                        <SelectValue placeholder="Select weight unit" />
+                        <SelectValue placeholder="Selecciona la unidad de peso" />
                       </SelectTrigger>
                       <SelectContent>
                         {WEIGHT_UNITS.map(unit => (
                           <SelectItem key={unit} value={unit}>
-                            {unit === 'kg' ? 'Kilogram (kg)' : 
-                             unit === 'g' ? 'Gram (g)' : 
-                             unit === 'lb' ? 'Pound (lb)' : 
-                             'Ounce (oz)'}
+                            {unit === 'kg' ? 'Kilogramo (kg)' : 
+                             unit === 'g' ? 'Gramo (g)' : 
+                             unit === 'lb' ? 'Libra (lb)' : 
+                             'Onza (oz)'}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -582,7 +582,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                 name="min_weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Minimum Weight</FormLabel>
+                    <FormLabel>Peso Mínimo</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -595,7 +595,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Minimum amount that can be purchased (leave empty for no minimum)
+                      Cantidad mínima que se puede comprar (dejar vacío para no tener mínimo)
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -605,9 +605,9 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
               <div className="col-span-1 md:col-span-2">
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Weight-based product</AlertTitle>
+                  <AlertTitle>Producto vendido por peso</AlertTitle>
                   <AlertDescription>
-                    The price specified above is per {weightUnit || '(select unit)'}. Customers will select the weight they want to purchase.
+                    El precio especificado arriba es por {weightUnit || '(seleccionar unidad)'}. Los clientes seleccionarán el peso que desean comprar.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -620,10 +620,10 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Descripción</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Product description"
+                  placeholder="Descripción del producto"
                   className="resize-none border-2 border-gray-300 focus:border-blue-500"
                   {...field}
                 />
@@ -638,9 +638,9 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
           name="images"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Product Images</FormLabel>
+              <FormLabel>Imágenes del Producto</FormLabel>
               <FormDescription>
-                Upload clear, high-quality images that showcase your product.
+                Sube imágenes claras y de alta calidad que muestren tu producto.
               </FormDescription>
               <FormControl>
                 <div className="space-y-4">
@@ -652,14 +652,14 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                       field.onChange([...images, ...urls]);
                     }}
                     imageType="product"
-                    label="Upload Product Images"
-                    helpText="Recommended size: 1000×1000. JPG, PNG, WebP (up to 4MB)"
+                    label="Subir Imágenes del Producto"
+                    helpText="Tamaño recomendado: 1000×1000. JPG, PNG, WebP (hasta 4MB)"
                   />
                   
                   {images && images.length > 0 && (
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <h3 className="text-sm font-medium">Product Images ({images.length})</h3>
+                        <h3 className="text-sm font-medium">Imágenes del Producto ({images.length})</h3>
                         {images.length > 0 && (
                           <Button 
                             type="button" 
@@ -667,7 +667,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                             size="sm"
                             onClick={() => field.onChange([])}
                           >
-                            <X className="h-4 w-4 mr-1" /> Remove All
+                            <X className="h-4 w-4 mr-1" /> Eliminar Todas
                           </Button>
                         )}
                       </div>
@@ -677,7 +677,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                             <div className="aspect-square relative">
                               <Image
                                 src={image}
-                                alt={`Product image ${index + 1}`}
+                                alt={`Imagen del producto ${index + 1}`}
                                 fill
                                 className="object-cover"
                               />
@@ -691,7 +691,7 @@ export function ProductForm({ type, product, productId }: ProductFormProps) {
                                     const newImages = images.filter((_: string, i: number) => i !== index);
                                     field.onChange(newImages);
                                     toast({
-                                      description: "Image removed",
+                                      description: "Imagen eliminada",
                                     });
                                   }}
                                 >

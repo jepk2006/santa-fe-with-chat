@@ -101,11 +101,11 @@ const CartTable = ({ items, userId }: CartTableProps) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Item</TableHead>
-          <TableHead>Amount</TableHead>
-          <TableHead>Price</TableHead>
+          <TableHead>Artículo</TableHead>
+          <TableHead>Cantidad</TableHead>
+          <TableHead>Precio</TableHead>
           <TableHead>Subtotal</TableHead>
-          <TableHead>Actions</TableHead>
+          <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
 

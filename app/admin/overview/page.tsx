@@ -99,7 +99,7 @@ export default async function AdminOverviewPage() {
     return (
       <div className='space-y-6'>
         <div className="flex justify-between items-center">
-          <h1 className='h2-bold'>Sales Analytics</h1>
+          <h1 className='h2-bold'>Análisis de Ventas</h1>
           <div className="text-muted-foreground text-sm">
             Data updated as of {new Date().toLocaleDateString()}
           </div>
@@ -108,7 +108,7 @@ export default async function AdminOverviewPage() {
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Total Revenue</CardTitle>
+              <CardTitle className='text-sm font-medium'>Ingresos Totales</CardTitle>
               <BadgeDollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -116,14 +116,14 @@ export default async function AdminOverviewPage() {
                 {formatCurrency(summary.totalSales)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                Lifetime sales revenue
+                Todos los ingresos hasta la fecha
               </p>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Total Orders</CardTitle>
+              <CardTitle className='text-sm font-medium'>Total de Pedidos</CardTitle>
               <ShoppingBag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -131,14 +131,14 @@ export default async function AdminOverviewPage() {
                 {formatNumber(summary.totalOrders)}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                All time order count
+                Conteo de pedidos de todos los tiempos
               </p>
             </CardContent>
           </Card>
           
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Pending Orders</CardTitle>
+              <CardTitle className='text-sm font-medium'>Pedidos Pendientes</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -153,7 +153,7 @@ export default async function AdminOverviewPage() {
           
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-              <CardTitle className='text-sm font-medium'>Completed Orders</CardTitle>
+              <CardTitle className='text-sm font-medium'>Pedidos Completados</CardTitle>
               <CheckCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -170,7 +170,7 @@ export default async function AdminOverviewPage() {
         <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
           <div className="flex items-center">
             <Package className="h-5 w-5 mr-2 text-muted-foreground" />
-            <span className="font-medium">Active Products:</span>
+            <span className="font-medium">Productos Activos:</span>
           </div>
           <div className="text-lg font-bold">{formatNumber(summary.productCount)}</div>
         </div>
@@ -178,7 +178,7 @@ export default async function AdminOverviewPage() {
         <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-7'>
           <Card className='col-span-4'>
             <CardHeader>
-              <CardTitle>Sales Analysis</CardTitle>
+              <CardTitle>Análisis de Ventas</CardTitle>
             </CardHeader>
             <CardContent>
               <Charts data={chartsData} />
@@ -187,17 +187,17 @@ export default async function AdminOverviewPage() {
           
           <Card className='col-span-3'>
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
+              <CardTitle>Pedidos Recientes</CardTitle>
             </CardHeader>
             
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>BUYER</TableHead>
-                    <TableHead>DATE</TableHead>
+                    <TableHead>COMPRADOR</TableHead>
+                    <TableHead>FECHA</TableHead>
                     <TableHead>TOTAL</TableHead>
-                    <TableHead className="text-right">ACTIONS</TableHead>
+                    <TableHead className="text-right">ACCIONES</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,15 +229,15 @@ export default async function AdminOverviewPage() {
           
           <Card className='col-span-7'>
             <CardHeader>
-              <CardTitle>Top Products by Revenue</CardTitle>
+              <CardTitle>Productos Principales por Ingresos</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>PRODUCT</TableHead>
-                    <TableHead>QUANTITY/WEIGHT</TableHead>
-                    <TableHead>REVENUE</TableHead>
+                    <TableHead>PRODUCTO</TableHead>
+                    <TableHead>CANTIDAD/PESO</TableHead>
+                    <TableHead>INGRESOS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -265,15 +265,15 @@ export default async function AdminOverviewPage() {
         
         <Card className='col-span-7'>
           <CardHeader>
-            <CardTitle>Sales by Category</CardTitle>
+            <CardTitle>Ventas por Categoría</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>CATEGORY</TableHead>
-                  <TableHead>SALES AMOUNT</TableHead>
-                  <TableHead>% OF TOTAL</TableHead>
+                  <TableHead>CATEGORÍA</TableHead>
+                  <TableHead>MONTO DE VENTAS</TableHead>
+                  <TableHead>% DEL TOTAL</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -307,7 +307,7 @@ export default async function AdminOverviewPage() {
     return (
       <div className='space-y-6'>
         <div className="flex justify-between items-center">
-          <h1 className='h2-bold'>Sales Analytics</h1>
+          <h1 className='h2-bold'>Análisis de Ventas</h1>
           <div className="text-muted-foreground text-sm">
             Error loading dashboard data
           </div>

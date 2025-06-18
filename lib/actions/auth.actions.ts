@@ -225,6 +225,9 @@ export async function registerUser(userData: {
         type: 'signup',
         email: userData.email,
         password: userData.password,
+        options: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://santafe.com.bo'}/api/auth/callback?next=/account`,
+        }
       });
 
       if (linkError || !linkData?.properties?.action_link) {
@@ -311,6 +314,9 @@ export async function registerUser(userData: {
       type: 'signup',
       email: userData.email,
       password: userData.password,
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://santafe.com.bo'}/api/auth/callback?next=/account`,
+      }
     });
 
     if (linkError) {

@@ -1,5 +1,5 @@
 # Dependencies
-node_modules
+node_modules/
 /.pnp
 .pnp.js
 
@@ -23,26 +23,53 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 
 # IDE and editor files
 .idea/
 .vscode/
 *.swp
 *.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 .DS_Store
 Thumbs.db
+*~
 
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+# Cache and temporary
+.npm/
 .eslintcache
-
-# Optional REPL history
 .node_repl_history
+.cache/
+.next/cache/
+jest.cache/
+.turbo/
+tmp/
+temp/
 
-# Output of 'npm pack'
+# Package management
 *.tgz
-
-# Yarn Integrity file
 .yarn-integrity
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.yarn/releases/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+.vercel/
+build/
+.out/
+storybook-static/
+
+# Logs
+logs/
+*.log
+
+# Docker
+docker-compose.override.yml

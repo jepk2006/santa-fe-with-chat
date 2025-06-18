@@ -5,7 +5,7 @@ import { ProductForm } from '@/components/admin/product-form';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Create Product',
+  title: 'Crear Producto',
 };
 
 export default async function CreateProductPage() {
@@ -13,7 +13,7 @@ export default async function CreateProductPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-3xl font-bold tracking-tight">Create Product</h1>
+      <h1 className="text-3xl font-bold tracking-tight">Crear Producto</h1>
       <ProductForm type="Create" />
       </div>
   );

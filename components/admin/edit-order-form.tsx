@@ -341,11 +341,11 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
 
   // Status option data
   const statusOptions = [
-    { id: 'pending', label: 'Pending', description: 'New order, not yet processed', color: 'blue' },
-    { id: 'paid', label: 'Paid', description: 'Payment received', color: 'purple' },
-    { id: 'shipped', label: 'Shipped', description: 'Order has been shipped', color: 'yellow' },
-    { id: 'delivered', label: 'Delivered', description: 'Order completed and delivered', color: 'green' },
-    { id: 'cancelled', label: 'Cancelled', description: 'Order has been cancelled', color: 'red' }
+    { id: 'pending', label: 'Pendiente', description: 'Nuevo pedido, aún no procesado', color: 'blue' },
+    { id: 'paid', label: 'Pagado', description: 'Pago recibido', color: 'purple' },
+    { id: 'shipped', label: 'Enviado', description: 'El pedido ha sido enviado', color: 'yellow' },
+    { id: 'delivered', label: 'Entregado', description: 'Pedido completado y entregado', color: 'green' },
+    { id: 'cancelled', label: 'Cancelado', description: 'El pedido ha sido cancelado', color: 'red' }
   ];
 
   return (
@@ -353,12 +353,12 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-4">Customer Information</h3>
+            <h3 className="text-lg font-medium mb-4">Información del Cliente</h3>
             <div className="space-y-2">
               <div className="flex justify-between border-b pb-2">
-                <span className="text-muted-foreground">Customer:</span>
+                <span className="text-muted-foreground">Cliente:</span>
                 <span className="font-medium">
-                  {orderDetails.user?.[0]?.name || 'Guest User'}
+                  {orderDetails.user?.[0]?.name || 'Usuario Invitado'}
                 </span>
               </div>
               <div className="flex justify-between border-b pb-2">
@@ -368,13 +368,13 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
                 </span>
               </div>
               <div className="flex justify-between border-b pb-2">
-                <span className="text-muted-foreground">Phone:</span>
+                <span className="text-muted-foreground">Teléfono:</span>
                 <span className="font-medium">
                   {orderDetails.phone_number || 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between border-b pb-2">
-                <span className="text-muted-foreground">Order Date:</span>
+                <span className="text-muted-foreground">Fecha del Pedido:</span>
                 <span className="font-medium">
                   {formatDateTime(new Date(orderDetails.created_at)).dateTime}
                 </span>
@@ -385,13 +385,13 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
 
         <Card>
           <CardContent className="pt-6">
-            <h3 className="text-lg font-medium mb-4">Order Summary</h3>
+            <h3 className="text-lg font-medium mb-4">Resumen del Pedido</h3>
             <div className="space-y-3">
               <div className="space-y-1">
                 {orderDetails.items.map((item, index) => (
                   <div key={`${item.product_id}-${index}`} className="flex justify-between text-sm">
                     <span>
-                      {item.name || 'Product'} 
+                      {item.name || 'Producto'} 
                       {item.selling_method === 'weight' && item.weight
                         ? ` - ${item.weight} ${item.weight_unit || ''}`
                         : ` x ${item.quantity}`}
@@ -411,7 +411,7 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
 
       <Card>
         <CardContent className="pt-6">
-          <h3 className="text-lg font-medium mb-4">Order Status</h3>
+          <h3 className="text-lg font-medium mb-4">Estado del Pedido</h3>
           <div className="grid gap-4 md:grid-cols-3">
             {statusOptions.map(option => {
               // Determine if this option is the current status
@@ -468,7 +468,7 @@ export function EditOrderForm({ orderDetails }: EditOrderFormProps) {
         <Card className={feedback.type === 'success' ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'}>
           <CardContent className="pt-6">
             <h3 className={`text-lg font-medium mb-2 ${feedback.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
-              {feedback.type === 'success' ? 'Success' : 'Error'}
+              {feedback.type === 'success' ? 'Éxito' : 'Error'}
             </h3>
             <p className={`text-sm ${feedback.type === 'success' ? 'text-green-700' : 'text-red-700'}`}>
               {feedback.message}

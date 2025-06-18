@@ -23,6 +23,7 @@ export default function DeliveryPromoBanner({
   const deliveryFee = 15;
   const remaining = deliveryThreshold - currentTotal;
   const hasReachedThreshold = currentTotal >= deliveryThreshold;
+  const isWithinThreshold = remaining <= 200 && remaining > 0;
 
   if (!isVisible) return null;
 
@@ -37,7 +38,7 @@ export default function DeliveryPromoBanner({
               <span className="font-semibold">🎉 ¡Felicidades! Tienes envío GRATIS</span>
             </div>
           );
-        } else {
+        } else if (isWithinThreshold) {
           return (
             <div className="flex items-center gap-2 text-orange-700">
               <Truck className="h-5 w-5" />
@@ -47,13 +48,14 @@ export default function DeliveryPromoBanner({
             </div>
           );
         }
+        return null;
       
       default:
         return (
           <div className="flex items-center gap-2 text-white">
             <Truck className="h-5 w-5" />
             <span className="font-semibold">
-              ENVÍO GRATIS en pedidos de {formatCurrency(deliveryThreshold)} o más
+              ENVÍO GRATIS en pedidos arriba de {formatCurrency(deliveryThreshold)}
             </span>
           </div>
         );
@@ -64,21 +66,27 @@ export default function DeliveryPromoBanner({
     switch (variant) {
       case 'cart':
       case 'checkout':
-        return hasReachedThreshold 
-          ? "bg-green-50 border border-green-200 text-green-800"
-          : "bg-orange-50 border border-orange-200 text-orange-800";
+        if (hasReachedThreshold) {
+          return "bg-green-50 border border-green-200 text-green-800";
+        } else if (isWithinThreshold) {
+          return "bg-orange-50 border border-orange-200 text-orange-800";
+        }
+        return "";
       
       default:
         return "bg-brand-blue text-white"; // Using brand-blue (dark blue)
     }
   };
 
+  const bannerContent = getBannerContent();
+  if (!bannerContent) return null;
+
   return (
     <div className={`relative ${getBannerStyles()} ${className}`}>
       <div className="container mx-auto px-4 py-2">
         <div className="flex items-center justify-between">
           <div className="flex-1 flex items-center justify-center">
-            {getBannerContent()}
+            {bannerContent}
           </div>
           
           {showCloseButton && (

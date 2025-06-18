@@ -77,8 +77,8 @@ export async function createUser(userData: {
     // Generate a password reset link if no password was provided
     if (!userData.password) {
       try {
-        // Get the full site URL from environment or use localhost in development
-        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3002';
+        // Get the full site URL from environment or use production URL
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://santafe.com.bo';
         
         // Generate the password reset link through Supabase
         const { data: resetData, error: resetError } = await supabaseAdmin.auth.admin.generateLink({

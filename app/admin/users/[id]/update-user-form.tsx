@@ -145,7 +145,7 @@ const UpdateUserForm = ({
               >;
             }) => (
             <FormItem>
-                <FormLabel>Phone Number</FormLabel>
+                <FormLabel>Número de Teléfono</FormLabel>
                 <FormControl>
                   <PhoneInput 
                     className="border-2 border-gray-300 focus:border-blue-500" 
@@ -171,14 +171,14 @@ const UpdateUserForm = ({
               >;
             }) => (
             <FormItem>
-                <FormLabel>Role</FormLabel>
+                <FormLabel>Rol</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                 defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
-                      <SelectValue placeholder='Select a role' />
+                      <SelectValue placeholder='Selecciona un rol' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -195,7 +195,7 @@ const UpdateUserForm = ({
           />
 
         <Button type='submit' className='w-full'>
-          Update User
+          Actualizar Usuario
           </Button>
       </form>
     </Form>

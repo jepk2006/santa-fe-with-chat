@@ -106,7 +106,7 @@ export default function CreateUserForm() {
         router.refresh();
       }, 1000);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : 'Ocurrió un error desconocido';
       setDebugInfo(errorMessage);
       
       // Show password option if email method fails
@@ -129,11 +129,11 @@ export default function CreateUserForm() {
         <div className="bg-muted/50 p-4 rounded-lg border mb-6">
           <h3 className="font-medium flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            Password Setup Process
+            Proceso de Configuración de Contraseña
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            A password setup link will be automatically sent to the user's email.
-            They will need to click on this link to set their own password.
+            Se enviará automáticamente un enlace de configuración de contraseña al correo del usuario.
+            Necesitarán hacer clic en este enlace para establecer su propia contraseña.
           </p>
         </div>
         
@@ -142,9 +142,9 @@ export default function CreateUserForm() {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Nombre</FormLabel>
               <FormControl>
-                <Input placeholder="John Doe" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
+                <Input placeholder="Juan Pérez" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -156,12 +156,12 @@ export default function CreateUserForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Correo Electrónico</FormLabel>
               <FormDescription>
-                An invitation email will be sent to this address.
+                Se enviará un correo de invitación a esta dirección.
               </FormDescription>
               <FormControl>
-                <Input type="email" placeholder="john@example.com" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
+                <Input type="email" placeholder="juan@ejemplo.com" className="border-2 border-gray-300 focus:border-blue-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -173,9 +173,9 @@ export default function CreateUserForm() {
           name="phone_number"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone Number</FormLabel>
+              <FormLabel>Número de Teléfono</FormLabel>
               <FormDescription>
-                Optional phone number for the user.
+                Número de teléfono opcional para el usuario.
               </FormDescription>
               <FormControl>
                 <PhoneInput 
@@ -194,14 +194,14 @@ export default function CreateUserForm() {
           name="role"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Role</FormLabel>
+              <FormLabel>Rol</FormLabel>
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
               >
                 <FormControl>
                   <SelectTrigger className="border-2 border-gray-300 focus:border-blue-500">
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -217,50 +217,59 @@ export default function CreateUserForm() {
           )}
         />
 
-        {(showPasswordOption || debugInfo) && (
-          <Alert variant="warning" className="bg-amber-50 border-amber-200">
-            <AlertCircle className="h-4 w-4 text-amber-800" />
-            <AlertTitle className="text-amber-800">Alternative Method</AlertTitle>
-            <AlertDescription className="text-amber-700">
-              If the email invitation isn't working, you can set a temporary password directly.
-              <div className="mt-2 space-y-4">
-                <div className="flex items-start space-x-2">
-                  <Checkbox 
-                    id="use-password" 
-                    checked={usePassword}
-                    onCheckedChange={(checked) => {
-                      setUsePassword(checked === true);
-                    }}
-                  />
-                  <label 
-                    htmlFor="use-password" 
-                    className="text-sm cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    Set password directly instead of sending invitation
-                  </label>
-                </div>
-                {usePassword && (
-                  <div>
-                    <Input
-                      type="password"
-                      placeholder="Temporary password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="mt-2 border-2 border-gray-300 focus:border-blue-500"
-                    />
-                    <p className="text-xs mt-1 text-amber-600">
-                      Password must be at least 6 characters. The user can change it later.
-                    </p>
-                  </div>
-                )}
-              </div>
+        {showPasswordOption && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Opción de Contraseña Manual</AlertTitle>
+            <AlertDescription>
+              El método de invitación por correo falló. Puedes crear el usuario con una contraseña manual en su lugar.
             </AlertDescription>
           </Alert>
         )}
 
+        {showPasswordOption && (
+          <div className="space-y-4 p-4 border rounded-lg bg-yellow-50">
+            <div className="flex items-center space-x-2">
+                  <Checkbox 
+                id="usePassword" 
+                    checked={usePassword}
+                onCheckedChange={setUsePassword}
+                  />
+              <label htmlFor="usePassword" className="text-sm font-medium">
+                Usar contraseña manual en lugar de invitación por correo
+                  </label>
+                </div>
+            
+                {usePassword && (
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Contraseña</FormLabel>
+                    <FormDescription>
+                      Mínimo 6 caracteres. El usuario puede cambiar esto más tarde.
+                    </FormDescription>
+                    <FormControl>
+                    <Input
+                      type="password"
+                        placeholder="••••••••" 
+                        className="border-2 border-gray-300 focus:border-blue-500"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+                )}
+              </div>
+        )}
+
         {debugInfo && (
           <div className="bg-amber-50 border border-amber-200 p-4 rounded-md">
-            <h4 className="font-medium text-amber-800 mb-1">Debug Information</h4>
+            <h4 className="font-medium text-amber-800 mb-1">Información de Depuración</h4>
             <pre className="text-xs overflow-auto whitespace-pre-wrap text-amber-700">
               {debugInfo}
             </pre>
@@ -274,10 +283,10 @@ export default function CreateUserForm() {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating User...
+              Creando Usuario...
             </>
           ) : (
-            usePassword ? 'Create User with Password' : 'Create & Send Invitation'
+            usePassword ? 'Crear Usuario con Contraseña' : 'Crear y Enviar Invitación'
           )}
         </Button>
       </form>

@@ -12,7 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import { formatCurrency } from '@/lib/utils';
-// Removed createOrderWithDetails import since we're using temporary orders now
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { IMaskInput } from 'react-imask';
@@ -24,12 +23,12 @@ import DeliveryPromoBanner from '@/components/shared/delivery-promo-banner';
 
 const AddressMap = dynamic(() => import('@/components/ui/address-map').then(mod => mod.AddressMap), {
   ssr: false,
-  loading: () => <p>Loading map...</p>
+  loading: () => <p>Cargando mapa...</p>
 });
 
 const checkoutSchema = z.object({
-  phone_number: z.string().min(1, 'Phone number is required'),
-  name: z.string().min(1, 'Name is required'),
+  phone_number: z.string().min(1, 'El número de teléfono es requerido'),
+  name: z.string().min(1, 'El nombre es requerido'),
   delivery_method: z.enum(['pickup', 'delivery']),
   pickup_location: z.string().optional(),
   shipping_address: z.any().optional(),
@@ -43,7 +42,7 @@ const checkoutSchema = z.object({
   }
   return true;
 }, {
-  message: 'Please select a pickup location or complete the delivery address',
+  message: 'Por favor seleccione un punto de retiro o complete la dirección de entrega',
   path: ['pickup_location', 'shipping_address'],
 });
 
@@ -51,7 +50,7 @@ function LoadingState() {
   return (
     <div className="text-center flex flex-col items-center justify-center min-h-[400px]">
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-4" />
-      <p className="text-muted-foreground">Loading cart...</p>
+      <p className="text-muted-foreground">Cargando carrito...</p>
     </div>
   );
 }
@@ -59,7 +58,7 @@ function LoadingState() {
 function EmptyCartState() {
   return (
     <div className="text-center flex flex-col items-center justify-center min-h-[400px]">
-      <p className="text-muted-foreground">Your cart is empty. You will be redirected shortly.</p>
+      <p className="text-muted-foreground">Tu carrito está vacío. Serás redirigido en breve.</p>
     </div>
   );
 }
@@ -70,7 +69,6 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
-  const [locationRequested, setLocationRequested] = useState(false);
 
   useEffect(() => {
     setHasMounted(true);
@@ -110,59 +108,26 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
     return R * c; // Distance in kilometers
   };
 
-  // Find closest pickup location
-  const findClosestLocation = (userLat: number, userLng: number) => {
-    let closestLocation = pickupLocations[0];
-    let minDistance = calculateDistance(userLat, userLng, closestLocation.lat, closestLocation.lng);
-
-    pickupLocations.forEach(location => {
-      const distance = calculateDistance(userLat, userLng, location.lat, location.lng);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestLocation = location;
-      }
-    });
-
-    return closestLocation;
-  };
-
   // Request user location when pickup is selected
   useEffect(() => {
-    if (deliveryMethod === 'pickup' && !locationRequested && navigator.geolocation) {
-      setLocationRequested(true);
-      
+    if (deliveryMethod === 'pickup' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const userLat = position.coords.latitude;
           const userLng = position.coords.longitude;
           setUserLocation({ lat: userLat, lng: userLng });
-          
-          // Find and select closest location
-          const closest = findClosestLocation(userLat, userLng);
-          setValue('pickup_location', closest.id);
-          
-          toast.success(`Ubicación más cercana seleccionada: ${closest.name}`);
         },
-        (error) => {
-
-          // Silently fail - user will see all locations as before
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000 // 5 minutes
+        () => {
+          // Silently fail - user will see all locations without distances
         }
       );
     }
-  }, [deliveryMethod, locationRequested, setValue]);
+  }, [deliveryMethod]);
 
   const cart = useMemo(() => {
     if (user?.id) {
-      // For logged-in users, the cart is passed via `initialCart`.
-      // It can be null if the user has no cart in the DB.
       return initialCart;
     }
-    // For guests, construct the cart object from local storage.
     const guestCartTotal = guestCartItems.reduce(
       (sum, item) => sum + item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity),
       0
@@ -174,18 +139,17 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
     };
   }, [user, initialCart, guestCartItems]);
 
-  // Calculate fees based on delivery method and subtotal
   const subtotal = useMemo(() => {
     return cart?.totalPrice || 0;
   }, [cart]);
 
   const serviceFee = useMemo(() => {
-    return subtotal * 0.03; // 3% service fee
+    return subtotal * 0.03;
   }, [subtotal]);
 
   const deliveryFee = useMemo(() => {
     if (deliveryMethod === 'delivery' && subtotal < 450) {
-      return 15; // Bs 15 delivery fee for orders under Bs. 450
+      return 15;
     }
     return 0;
   }, [deliveryMethod, subtotal]);
@@ -196,21 +160,19 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
 
   const isCartEmpty = useMemo(() => {
     if (!hasMounted) return false;
-    // Unified check for both logged-in users and guests.
-    // An empty cart is one with no items.
     return !cart || !cart.items || cart.items.length === 0;
   }, [hasMounted, cart]);
 
   useEffect(() => {
     if (hasMounted && isCartEmpty) {
-      toast.error("Your cart is empty. Redirecting...");
+      toast.error("Tu carrito está vacío. Redirigiendo...");
       router.push('/cart');
     }
   }, [hasMounted, isCartEmpty, router]);
 
   const onSubmit = useCallback(async (data: any) => {
     if (!cart?.id) {
-      toast.error("Cannot proceed with an empty cart.");
+      toast.error("No se puede proceder con un carrito vacío.");
       return;
     }
     setIsSubmitting(true);
@@ -219,11 +181,10 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
         ? { ...data.shipping_address, fullName: data.name }
         : { fullName: data.name };
 
-      // Create order data object but don't save to database yet
       const orderData = {
         cartId: cart.id,
         cartItems: cart.items,
-        totalPrice: finalTotal, // Use the new total with fees
+        totalPrice: finalTotal,
         subtotal: subtotal,
         serviceFee: serviceFee,
         deliveryFee: deliveryFee,
@@ -234,14 +195,13 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
         pickupLocation: data.pickup_location || null,
       };
 
-      // Store order data in session storage temporarily
       const tempOrderId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       sessionStorage.setItem(`order_${tempOrderId}`, JSON.stringify(orderData));
 
-      toast.success('Order details confirmed. Proceed to payment.');
+      toast.success('Detalles del pedido confirmados. Procediendo al pago.');
       router.push(`/payment/${tempOrderId}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred.');
+      toast.error(error instanceof Error ? error.message : 'Ocurrió un error inesperado.');
       setIsSubmitting(false);
     }
   }, [cart, router, user, finalTotal, subtotal, serviceFee, deliveryFee]);
@@ -253,14 +213,12 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
     if (isCartEmpty) {
       return <EmptyCartState />;
     }
-    // Only render the form if we have a cart to display
     if (!cart) {
-       // This can happen briefly for logged-in users while cart is loading.
       return <LoadingState />;
     }
     return (
       <>
-        <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+        <h1 className="text-3xl font-bold mb-8">Finalizar Compra</h1>
         
         {deliveryMethod === 'delivery' && (
           <DeliveryPromoBanner 
@@ -275,7 +233,7 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
           {/* Order Summary */}
           <div className="space-y-6">
             <Card>
-              <CardHeader><CardTitle>Order Summary</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Resumen del Pedido</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {cart.items.map((item: any, index: number) => {
@@ -288,8 +246,8 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
                             <p className="font-medium">{product.name}</p>
                             <p className="text-sm text-muted-foreground">
                               {item.selling_method === 'weight'
-                                ? `Weight: ${item.weight} ${item.weight_unit}`
-                                : `Qty: ${item.quantity}`}
+                                ? `Peso: ${item.weight} ${item.weight_unit}`
+                                : `Cantidad: ${item.quantity}`}
                             </p>
                           </div>
                         </div>
@@ -305,12 +263,12 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
                     <p>{formatCurrency(subtotal)}</p>
                   </div>
                   <div className="flex justify-between">
-                    <p>Service Fee (3%)</p>
+                    <p>Cargo por servicio (3%)</p>
                     <p>{formatCurrency(serviceFee)}</p>
                   </div>
                   {deliveryFee > 0 && (
                     <div className="flex justify-between">
-                      <p>Delivery Fee</p>
+                      <p>Cargo por envío</p>
                       <p>{formatCurrency(deliveryFee)}</p>
                     </div>
                   )}
@@ -330,9 +288,9 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
               <CardHeader><CardTitle>Contacto y Entrega</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" {...register('name')} placeholder="John Doe" />
-                  {errors.name && <p className="text-destructive text-sm mt-1">{(errors.name.message as string) || 'This field is required'}</p>}
+                  <Label htmlFor="name">Nombre Completo</Label>
+                  <Input id="name" {...register('name')} placeholder="Juan Pérez" />
+                  {errors.name && <p className="text-destructive text-sm mt-1">{(errors.name.message as string) || 'Este campo es requerido'}</p>}
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="phone_number" className="block text-sm font-semibold text-gray-800 mb-1">
@@ -353,7 +311,7 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
                       />
                     )}
                   />
-                  {errors.phone_number && <p className="text-destructive text-sm mt-1">{(errors.phone_number.message as string) || 'This field is required'}</p>}
+                  {errors.phone_number && <p className="text-destructive text-sm mt-1">{(errors.phone_number.message as string) || 'Este campo es requerido'}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label>Método de Entrega</Label>
@@ -385,23 +343,7 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
                     {/* Embedded Map */}
                     <PickupLocationsMap className="mb-4" />
                     
-                    {/* Location Status */}
-                    {deliveryMethod === 'pickup' && (
-                      <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span>📍</span>
-                          {userLocation ? (
-                            <span className="text-blue-700">
-                              Ubicación detectada - Se seleccionó automáticamente la sucursal más cercana
-                            </span>
-                          ) : (
-                            <span className="text-gray-600">
-                              Para seleccionar automáticamente la sucursal más cercana, active la ubicación en su navegador
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+
                     <Controller
                       name="pickup_location"
                       control={control}
@@ -613,7 +555,7 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
               </CardContent>
             </Card>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirm Order & Pay'}
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Confirmar Pedido y Pagar'}
             </Button>
           </div>
         </form>

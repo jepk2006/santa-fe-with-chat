@@ -80,7 +80,7 @@ export function LoginForm() {
         toast.info('Your guest cart has been merged with your account.');
       }
 
-      toast.success('Login successful');
+      toast.success('Inicio de sesión exitoso');
 
       if (role === 'admin' || role === 'ventas') {
         router.push('/admin/overview');
@@ -89,7 +89,7 @@ export function LoginForm() {
       }
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.');
     } finally {
       setIsLoading(false);
     }
@@ -98,20 +98,20 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Correo Electrónico</Label>
         <Input
           id="email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@example.com"
+          placeholder="nombre@ejemplo.com"
           className="border-2 border-gray-300 focus:border-brand-blue"
           required
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <Input
           id="password"
           type="password"
