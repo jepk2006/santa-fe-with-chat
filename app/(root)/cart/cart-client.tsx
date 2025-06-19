@@ -213,7 +213,7 @@ export function CartClient() {
                             handleQuantityChange(item.id, 1);
                           }
                         }}
-                        className="w-16 text-center"
+                        className="w-16 text-center border border-gray-200 rounded-md"
                       />
                       <Button
                         variant="outline"

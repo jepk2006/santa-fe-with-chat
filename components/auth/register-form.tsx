@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { registerUser } from '@/lib/actions/auth.actions';
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  onRegistered?: (isRegistered: boolean) => void;
+}
+
+export default function RegisterForm({ onRegistered }: RegisterFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -21,6 +25,10 @@ export default function RegisterForm() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+
+  useEffect(() => {
+    onRegistered?.(registered);
+  }, [registered, onRegistered]);
 
   // Format phone number as user types
   const formatPhoneNumber = (value: string) => {

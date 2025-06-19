@@ -9,7 +9,6 @@ import { z } from 'zod';
 import { convertToSnakeCase, handlePagination, handleSupabaseError } from './database.actions';
 import { createClient } from '../supabase-server';
 import { SUPABASE_TABLES } from '../constants';
-import { sendPasswordSetupEmail } from '../email';
 
 // Get user by the ID
 export async function getUserById(userId: string) {
@@ -72,7 +71,7 @@ export async function createUser(userData: {
 
     if (error) throw error;
 
-    let passwordResetMessage = 'User created successfully';
+    let message = 'User created successfully';
     
     // Generate a password reset link if no password was provided
     if (!userData.password) {
@@ -106,18 +105,7 @@ export async function createUser(userData: {
           };
         }
 
-        const resetLink = resetData.properties.action_link;
-
-        // Send the password setup email
-        const emailResult = await sendPasswordSetupEmail(
-          userData.email,
-          userData.name,
-          resetLink
-        );
-        
-        passwordResetMessage = emailResult.success
-          ? 'User created successfully. A password setup email has been sent.'
-          : 'User created successfully, but failed to send password setup email. ' + emailResult.message;
+        message = 'User created successfully. A password setup email has been sent.';
 
       } catch (resetError) {
         return {
@@ -129,12 +117,12 @@ export async function createUser(userData: {
       }
     }
 
-    revalidatePath('/admin/users');
     return {
       success: true,
-      message: passwordResetMessage,
+      message,
       data
     };
+
   } catch (error) {
     return {
       success: false,

@@ -36,16 +36,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' className={`${outfit.variable} ${inter.variable}`}>
-      <body className={`${inter.className} antialiased min-h-screen`}>
+    <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
+      <body className={`${inter.className} antialiased min-h-screen overscroll-x-auto`}>
         <AuthProvider>
-        <ThemeProvider>
-          <div className="animate-fade-in">
-            <HashRedirector />
-            {children}
-            <Toaster position="bottom-right" />
-          </div>
-        </ThemeProvider>
+          <ThemeProvider>
+            <div className="animate-fade-in">
+              <HashRedirector />
+              {children}
+              <Toaster position="bottom-right" />
+            </div>
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>

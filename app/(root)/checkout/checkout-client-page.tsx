@@ -289,7 +289,12 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nombre Completo</Label>
-                  <Input id="name" {...register('name')} placeholder="Juan Pérez" />
+                  <Input 
+                    id="name" 
+                    {...register('name')} 
+                    placeholder="Juan Pérez" 
+                    className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"
+                  />
                   {errors.name && <p className="text-destructive text-sm mt-1">{(errors.name.message as string) || 'Este campo es requerido'}</p>}
                 </div>
                 <div className="space-y-3">

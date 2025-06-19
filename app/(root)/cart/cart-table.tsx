@@ -172,7 +172,7 @@ const CartTable = ({ items, userId }: CartTableProps) => {
                     >
                       -
                     </Button>
-                    <span>{item.quantity}</span>
+                    <span className="min-w-[2rem] text-center px-2 py-1 border rounded-md">{item.quantity}</span>
                     <Button
                       variant='outline'
                       size='icon'

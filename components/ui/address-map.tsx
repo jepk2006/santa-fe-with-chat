@@ -140,16 +140,34 @@ export function AddressMap({ onAddressSelect, initialAddress }: AddressMapProps)
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
             <Label htmlFor="street">Calle</Label>
-            <Input id="street" value={street} onChange={(e) => setStreet(e.target.value)} placeholder="Nombre de la calle" />
+            <Input 
+              id="street" 
+              value={street} 
+              onChange={(e) => setStreet(e.target.value)} 
+              placeholder="Nombre de la calle"
+              className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"
+            />
         </div>
         <div className="space-y-2">
             <Label htmlFor="houseNumber">Número de casa</Label>
-            <Input id="houseNumber" value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder="Ej: 1234" />
+            <Input 
+              id="houseNumber" 
+              value={houseNumber} 
+              onChange={(e) => setHouseNumber(e.target.value)} 
+              placeholder="Ej: 1234"
+              className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"
+            />
         </div>
       </div>
        <div className="space-y-2">
             <Label htmlFor="details">Detalles Adicionales</Label>
-            <Input id="details" value={details} onChange={(e) => setDetails(e.target.value)} placeholder="Apartamento, punto de referencia, etc." />
+            <Input 
+              id="details" 
+              value={details} 
+              onChange={(e) => setDetails(e.target.value)} 
+              placeholder="Apartamento, punto de referencia, etc."
+              className="border-2 border-gray-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all duration-200"
+            />
       </div>
     </div>
   );

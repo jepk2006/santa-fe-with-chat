@@ -16,9 +16,9 @@ import { User as SupabaseUser } from '@supabase/supabase-js';
 export const NAV_LINKS = [
   { href: '/', label: 'Inicio', icon: 'Home' },
   { href: '/products', label: 'Productos', icon: 'Store' },
-  { href: '/about', label: 'Sobre Nosotros', icon: 'Info' },
-  { href: '/contact', label: 'Contáctanos', icon: 'Phone' },
   { href: '/order', label: 'Mis Pedidos', icon: 'Package' },
+  { href: '/contact', label: 'Contáctanos', icon: 'Phone' },
+  { href: '/about', label: 'Sobre Nosotros', icon: 'Info' },
 ];
 
 const Header = () => {
@@ -85,17 +85,18 @@ const Header = () => {
 
   return (
     <header className="w-full bg-brand-white sticky top-0 z-40 border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-10 flex items-center justify-between h-20">
         {/* Logo */}
-        <Link href="/" className="flex items-center flex-shrink-0">
-          <Image
-            src="/images/logo.png"
-            alt="Logo"
-            width={160}
-            height={160}
-            className="object-contain h-14 w-auto"
-            priority
-          />
+        <Link href="/" className="flex items-center flex-shrink-0 h-full py-2">
+          <div className="relative h-full aspect-[3/1]">
+            <Image
+              src="/images/logo.png"
+              alt="Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
@@ -162,11 +163,11 @@ const Header = () => {
           {/* User Icon - Desktop Only */}
           <div className="hidden lg:block">
             {!isSignedIn ? (
-              <Link href="/login" className="p-2 rounded-full hover:bg-gray-100 transition">
+              <Link href="/login" className="p-2.5 rounded-full hover:bg-gray-100 inline-flex items-center justify-center">
                 <User2 className="h-5 w-5 text-gray-700" />
               </Link>
             ) : (
-              <Link href="/account" className="p-2 rounded-full hover:bg-gray-100 transition">
+              <Link href="/account" className="p-2.5 rounded-full hover:bg-gray-100 inline-flex items-center justify-center">
                 <User2 className="h-5 w-5 text-gray-700" />
               </Link>
             )}
