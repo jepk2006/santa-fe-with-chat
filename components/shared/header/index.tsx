@@ -90,7 +90,7 @@ const Header = () => {
         <Link href="/" className="flex items-center flex-shrink-0 h-full py-2">
           <div className="relative h-full aspect-[3/1]">
             <Image
-              src="/images/logo.png"
+              src="/images/logo2.png"
               alt="Logo"
               fill
               className="object-contain"
