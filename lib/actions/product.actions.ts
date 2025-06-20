@@ -7,6 +7,7 @@ import { insertProductSchema, updateProductSchema } from '../validators';
 import { z } from 'zod';
 import { convertToSnakeCase, convertToCamelCase, handlePagination, handleSupabaseError } from './database.actions';
 import { Product } from '@/types';
+import { LOCATIONS } from '../constants/locations';
 
 // Get latest products
 export async function getLatestProducts() {
@@ -48,14 +49,43 @@ export async function getProductBySlug(slug: string) {
 
 // Get single product by it's ID
 export async function getProductById(productId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('products')
-    .select('*')
-    .eq('id', productId)
-    .single();
+  try {
+    if (!productId) throw new Error('Product ID is required');
 
-  if (error) throw error;
-  return convertToPlainObject(data);
+    const { data, error } = await supabaseAdmin
+      .from('products')
+      .select(`
+        *,
+        product_inventory (
+          id,
+          unit_weight,
+          quantity,
+          unit_price,
+          location_id,
+          is_available
+        )
+      `)
+      .eq('id', productId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching product:', error);
+      throw error;
+    }
+
+    if (!data) {
+      throw new Error('Product not found');
+    }
+    
+    // Convert to camelCase and ensure images is an array
+    const convertedData = await convertToCamelCase(data);
+    convertedData.images = Array.isArray(convertedData.images) ? convertedData.images : [];
+    
+    return convertedData;
+  } catch (error) {
+    console.error('Error in getProductById:', error);
+    throw error;
+  }
 }
 
 // Get all products with pagination
@@ -106,12 +136,6 @@ export async function getAllProducts({
     countQuery = countQuery.gte('price', min).lte('price', max);
   }
 
-  // Apply rating filter
-  if (rating && rating !== 'all') {
-    productsQuery = productsQuery.gte('rating', Number(rating));
-    countQuery = countQuery.gte('rating', Number(rating));
-  }
-
   // Apply pagination
   const offset = (page - 1) * limit;
   productsQuery = productsQuery.range(offset, offset + limit - 1);
@@ -127,12 +151,8 @@ export async function getAllProducts({
   const totalItems = countResult.count || 0;
   const totalPages = Math.ceil(totalItems / limit);
 
-  return {
-    data: await convertToCamelCase(productsResult.data),
-    totalPages,
-    currentPage: page,
-    totalItems,
-  };
+  const convertedData = await convertToCamelCase(productsResult.data);
+  return { data: convertedData, totalPages, totalItems };
 }
 
 // Create a new product
@@ -274,7 +294,7 @@ export async function deleteProduct(id: string) {
       const updatedItems = cart.items.filter((item: any) => (item.product_id !== id && item.id !== id));
       const total_price = updatedItems.reduce(
         (sum: number, item: any) => {
-          if (item.selling_method === 'weight' && item.weight) {
+          if (item.weight) {
             return sum + (item.price * item.weight);
           }
           return sum + (item.price * item.quantity);
@@ -300,21 +320,21 @@ export async function deleteProduct(id: string) {
 
     if (deleteError) throw deleteError;
 
-    // Revalidate all relevant paths
-    revalidatePath('/admin/products');
-    revalidatePath('/');
-    revalidatePath('/products');
-    revalidateTag('products');
+    // Revalidate all relevant paths and tags
+    revalidatePath('/'); // Home page
+    revalidatePath('/products'); // Products page
+    revalidatePath('/admin/products'); // Admin products page
+    revalidateTag('products'); // Revalidate all product-related data
 
     return {
       success: true,
       message: 'Product deleted successfully',
     };
-  } catch (error: any) {
+  } catch (error) {
     return {
       success: false,
-      message: error.message || 'Failed to delete product',
-      error: error
+      error: error instanceof Error ? error.message : 'Failed to delete product',
+      message: 'Failed to delete product',
     };
   }
 }
@@ -400,6 +420,163 @@ export async function getSimilarProducts(categoryName: string, currentProductId:
     const convertedData = await convertToCamelCase(data);
     return convertedData;
   } catch (error) {
+    return [];
+  }
+}
+
+// Location management
+export async function createLocation(data: {
+  name: string;
+  address?: string;
+}) {
+  try {
+    const { data: location, error } = await supabaseAdmin
+      .from('locations')
+      .insert({
+        name: data.name,
+        address: data.address,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: location };
+  } catch (error) {
+    console.error('Error creating location:', error);
+    return { success: false, error };
+  }
+}
+
+export async function getLocations() {
+  try {
+    const { data: locations, error } = await supabaseAdmin
+      .from('locations')
+      .select('*')
+      .order('name');
+
+    if (error) throw error;
+    return locations;
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    return [];
+  }
+}
+
+// Product inventory management
+export async function addProductInventory(data: {
+  product_id: string;
+  location_id: string;
+  unit_weight: number;
+  quantity: number;
+  unit_price?: number;
+}) {
+  try {
+    // Ensure location_id is a valid UUID. If not, try to resolve it via locations table.
+    let resolvedLocationId = data.location_id;
+    const isUUID = (value: string) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value);
+
+    if (!isUUID(resolvedLocationId)) {
+      // Attempt to map slug to location name then fetch the corresponding UUID
+      const locationMeta = LOCATIONS.find((loc) => loc.id === resolvedLocationId);
+      if (!locationMeta) {
+        throw new Error(`Unknown location identifier: ${resolvedLocationId}`);
+      }
+
+      const { data: locationRow, error: locationError } = await supabaseAdmin
+        .from('locations')
+        .select('id')
+        .eq('name', locationMeta.name)
+        .single();
+
+      if (locationError) throw locationError;
+      if (!locationRow) throw new Error(`Location not found for slug ${resolvedLocationId}`);
+      resolvedLocationId = locationRow.id;
+    }
+
+    // Helper that performs the upsert with a given payload
+    const performUpsert = async (payload: Record<string, any>) => {
+      return supabaseAdmin
+        .from('product_inventory')
+        .upsert(payload, {
+          onConflict: 'product_id,location_id,unit_weight',
+          ignoreDuplicates: false,
+        })
+        .select()
+        .single();
+    };
+
+    // First attempt with weight_unit in case the column still exists
+    let { data: inventory, error } = await performUpsert({
+      product_id: data.product_id,
+      location_id: resolvedLocationId,
+      unit_weight: data.unit_weight,
+      quantity: data.quantity,
+      unit_price: data.unit_price,
+      weight_unit: 'kg',
+    });
+
+    // If column weight_unit does not exist (error code 42703), retry without it
+    if (error && error.code === '42703') {
+      ({ data: inventory, error } = await performUpsert({
+        product_id: data.product_id,
+        location_id: resolvedLocationId,
+        unit_weight: data.unit_weight,
+        quantity: data.quantity,
+        unit_price: data.unit_price,
+      }));
+    }
+
+    if (error) throw error;
+    return { success: true, data: inventory };
+  } catch (error) {
+    console.error('Error adding product inventory:', error);
+    return { success: false, error };
+  }
+}
+
+export async function updateProductInventory(
+  id: string,
+  data: {
+    quantity?: number;
+    unit_price?: number;
+    is_available?: boolean;
+  }
+) {
+  try {
+    const { data: inventory, error } = await supabaseAdmin
+      .from('product_inventory')
+      .update(data)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return { success: true, data: inventory };
+  } catch (error) {
+    console.error('Error updating product inventory:', error);
+    return { success: false, error };
+  }
+}
+
+export async function getProductInventory(productId: string) {
+  try {
+    const { data: inventory, error } = await supabaseAdmin
+      .from('product_inventory')
+      .select(`
+        *,
+        locations (
+          name,
+          address
+        )
+      `)
+      .eq('product_id', productId)
+      // Fetch all units regardless of availability
+      .order('unit_weight');
+
+    if (error) throw error;
+    return inventory;
+  } catch (error) {
+    console.error('Error fetching product inventory:', error);
     return [];
   }
 }

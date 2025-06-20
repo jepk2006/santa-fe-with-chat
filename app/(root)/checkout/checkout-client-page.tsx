@@ -125,22 +125,51 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
   }, [deliveryMethod]);
 
   const cart = useMemo(() => {
-    if (user?.id) {
-      return initialCart;
-    }
+    /*
+      Prioritisation order:
+      1. If the server returned a populated cart for the logged-in user, use that.
+      2. Otherwise, fall back to the client/guest cart (localStorage via useCart).
+      This avoids the situation where a logged-in user still has items in their
+      local cart (added before logging in or because saving to the server
+      failed) and sees an empty/incorrect order summary.
+     */
+
+    // Calculate guest cart first
     const guestCartTotal = guestCartItems.reduce(
-      (sum, item) => sum + item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity),
+      (sum, item) => sum + item.price * ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') ? (item.weight || 1) : item.quantity),
       0
     );
+
+    if (guestCartItems.length > 0) {
+      return {
+        items: guestCartItems,
+        totalPrice: guestCartTotal,
+        id: 'guest-cart',
+      };
+    }
+
+    const serverCartIsValid = initialCart && initialCart.items && initialCart.items.length > 0;
+
+    if (user?.id && serverCartIsValid) {
+      return initialCart;
+    }
+
+    // Fallback empty cart
     return {
-      items: guestCartItems,
-      totalPrice: guestCartTotal,
-      id: guestCartItems.length > 0 ? 'guest-cart' : null,
+      items: [],
+      totalPrice: 0,
+      id: null,
     };
   }, [user, initialCart, guestCartItems]);
 
   const subtotal = useMemo(() => {
-    return cart?.totalPrice || 0;
+    if (!cart || !cart.items) return 0;
+    return cart.items.reduce((sum: number, item: any) => {
+      if (item.selling_method === 'weight') {
+        return sum + (item.locked ? item.price : item.price * (item.weight || 1));
+      }
+      return sum + (item.price * (item.quantity || 1));
+    }, 0);
   }, [cart]);
 
   const serviceFee = useMemo(() => {
@@ -251,7 +280,11 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
                             </p>
                           </div>
                         </div>
-                        <p>{formatCurrency(item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity))}</p>
+                        <p>{formatCurrency(
+                          item.selling_method === 'weight'
+                            ? (item.locked ? item.price : item.price * (item.weight || 1))
+                            : item.price * item.quantity
+                        )}</p>
                       </div>
                     );
                   })}

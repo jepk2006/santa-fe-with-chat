@@ -44,6 +44,18 @@ const nextConfig = {
       },
     });
     
+    // --------------------------------------------------
+    // Disable persistent filesystem cache in development
+    // Next/webpack sometimes throws ENOENT errors for missing
+    // *.pack.gz files when the cache is corrupted or a build is
+    // interrupted. Switching to in-memory cache in dev avoids this.
+    // --------------------------------------------------
+    if (process.env.NODE_ENV === 'development') {
+      config.cache = {
+        type: 'memory',
+      };
+    }
+    
     return config;
   },
   async redirects() {

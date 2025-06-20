@@ -67,10 +67,6 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorKey: 'rating',
-    header: 'Rating',
-  },
-  {
     id: 'actions',
     cell: ({ row }) => <ProductActions product={row.original} />,
   },

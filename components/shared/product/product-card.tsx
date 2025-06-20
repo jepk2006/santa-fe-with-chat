@@ -22,8 +22,8 @@ const ProductCard = ({ product }: { product: Product }) => {
   const imageUrl = imageError || productImages.length === 0 ? defaultImage : productImages[0];
   
   // Support both camelCase and snake_case for backward compatibility
-  const sellingMethod = product.sellingMethod || product.selling_method;
-  const weightUnit = product.weightUnit || product.weight_unit;
+  const sellingMethod = (product as any).sellingMethod || product.selling_method;
+  const weightUnit = (product as any).weightUnit || (product as any).weight_unit;
   
   return (
     <Link href={`/product/${product.slug}`} className="group h-full">

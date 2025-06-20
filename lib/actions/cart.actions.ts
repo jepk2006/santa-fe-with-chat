@@ -76,7 +76,7 @@ export async function addItemToCart(
     name: string; 
     price: number; 
     image: string;
-    selling_method?: 'unit' | 'weight';
+    selling_method?: 'unit' | 'weight_custom' | 'weight_fixed';
     weight_unit?: string | null;
     weight?: number | null;
   }
@@ -119,7 +119,7 @@ export async function addItemToCart(
       .insert({
         user_id: user.id,
         items: [newItem],
-        total_price: productDetails?.selling_method === 'weight' && productDetails.weight 
+        total_price: (productDetails?.selling_method === 'weight_custom' || productDetails?.selling_method === 'weight_fixed') && productDetails.weight 
           ? productDetails.price * productDetails.weight 
           : productDetails?.price ? productDetails.price * quantity : 0,
       });
@@ -146,8 +146,8 @@ export async function addItemToCart(
           item.product_id === productId
             ? { 
                 ...item, 
-                quantity: productDetails?.selling_method === 'weight' ? quantity : item.quantity + quantity,
-                weight: productDetails?.selling_method === 'weight' ? productDetails.weight : item.weight
+                quantity: (productDetails?.selling_method === 'weight_custom' || productDetails?.selling_method === 'weight_fixed') ? quantity : item.quantity + quantity,
+                weight: (productDetails?.selling_method === 'weight_custom' || productDetails?.selling_method === 'weight_fixed') ? productDetails.weight : item.weight
               }
             : item
         )
@@ -354,7 +354,7 @@ export async function saveCart(
     // Recalculate total price to ensure it's correct, especially for weight-based products
     cartData.total_price = cartData.items.reduce(
       (sum: number, item: any) => {
-        if (item.selling_method === 'weight' && item.weight) {
+        if ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight) {
           return sum + (item.price * item.weight);
         }
         return sum + (item.price * item.quantity);

@@ -1,32 +1,44 @@
-import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/auth-guard';
-import { getProductById } from '@/lib/actions/product.actions';
-import { ProductForm } from '@/components/admin/product-form';
+import { getProductById, getProductInventory } from '@/lib/actions/product.actions';
+import { ProductEditForm } from '@/components/admin/product-edit-form';
 
 export const dynamic = 'force-dynamic';
 
-/* ---------- route metadata ---------- */
-export const metadata: Metadata = { title: 'Edit Product' };
-
-/* ---------- prop type ---------- */
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
-
 /* ---------- page component ---------- */
-export default async function EditProductPage({ params }: PageProps) {
-  await requireAdmin();
+export default async function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
+  try {
+    // Await params per Next.js 14 requirement
+    const { id } = await params;
 
-  const { id } = await params;          // ⬅️ await the promise
+    await requireAdmin();
 
-  const product = await getProductById(id);
-  if (!product) notFound();
+    if (!id) {
+      console.error('No product ID provided');
+      notFound();
+    }
 
-  return (
-    <div className='flex flex-col gap-4'>
-      <h1 className='text-3xl font-bold tracking-tight'>Edit Product</h1>
-      <ProductForm type='Update' product={product} productId={product.id} />
-    </div>
-  );
+    const product = await getProductById(id);
+    const inventory = await getProductInventory(id);
+    if (!product) {
+      console.error('Product not found');
+      notFound();
+    }
+
+    return (
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-2xl font-bold">Editar producto</h2>
+          <p className="text-gray-500">Actualiza los detalles del producto a continuación. Los cambios se guardan automáticamente.</p>
+        </div>
+
+        <div className="space-y-8">
+          <ProductEditForm product={product} initialInventory={inventory} />
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('Error in ProductEditPage:', error);
+    notFound();
+  }
 }

@@ -31,7 +31,17 @@ interface CartTableProps {
 function isWeightBasedItem(item: any) {
   // Check both camelCase and snake_case properties for backward compatibility
   const sellingMethod = item.sellingMethod || item.selling_method;
-  return sellingMethod === 'weight';
+  return sellingMethod === 'weight_custom' || sellingMethod === 'weight_fixed';
+}
+
+function isWeightCustomItem(item: any) {
+  const sellingMethod = item.sellingMethod || item.selling_method;
+  return sellingMethod === 'weight_custom';
+}
+
+function isWeightFixedItem(item: any) {
+  const sellingMethod = item.sellingMethod || item.selling_method;
+  return sellingMethod === 'weight_fixed';
 }
 
 function getWeightUnit(item: any) {
@@ -113,7 +123,7 @@ const CartTable = ({ items, userId }: CartTableProps) => {
         {items.map((item) => {
           const isWeightBased = isWeightBasedItem(item);
           const subtotal = isWeightBased && item.weight 
-            ? item.price * item.weight 
+            ? (item.locked ? item.price : item.price * item.weight) 
             : item.price * item.quantity;
             
           return (
@@ -135,7 +145,7 @@ const CartTable = ({ items, userId }: CartTableProps) => {
                       {isWeightBased ? (
                         <span className="flex items-center">
                           <Scale className="h-3 w-3 mr-1" />
-                          By weight
+                          {isWeightCustomItem(item) ? 'By weight (custom)' : 'By weight (fixed unit)'}
                         </span>
                       ) : (
                         <span className="flex items-center">
@@ -151,16 +161,22 @@ const CartTable = ({ items, userId }: CartTableProps) => {
               <TableCell>
                 {isWeightBased ? (
                   <div className='flex items-center gap-2'>
-                    <Input
-                      type="number"
-                      min={0.1}
-                      step={0.1}
-                      value={weights[item.id] || item.weight || 0}
-                      onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value))}
-                      className="w-20 h-9"
-                      disabled={isPending}
-                    />
-                    <span>{getWeightUnit(item)}</span>
+                    {isWeightFixedItem(item) || item.locked ? (
+                      <span>{item.weight} {getWeightUnit(item)}</span>
+                    ) : (
+                      <>
+                        <Input
+                          type="number"
+                          min={0.1}
+                          step={0.1}
+                          value={weights[item.id] || item.weight || 0}
+                          onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value))}
+                          className="w-20 h-9"
+                          disabled={isPending}
+                        />
+                        <span>{getWeightUnit(item)}</span>
+                      </>
+                    )}
                   </div>
                 ) : (
                   <div className='flex items-center gap-2'>
@@ -187,8 +203,8 @@ const CartTable = ({ items, userId }: CartTableProps) => {
 
               <TableCell>
                 <div>
-                  {formatPrice(item.price)}
-                  {isWeightBased && getWeightUnit(item) && (
+                  {formatPrice(isWeightFixedItem(item) ? item.price : item.price)}
+                  {isWeightCustomItem(item) && getWeightUnit(item) && (
                     <span className="text-xs text-muted-foreground">/{getWeightUnit(item)}</span>
                   )}
                 </div>

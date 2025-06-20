@@ -17,7 +17,7 @@ import DeliveryPromoBanner from '@/components/shared/delivery-promo-banner';
 function isWeightBasedItem(item: any) {
   // Check both camelCase and snake_case properties for backward compatibility
   const sellingMethod = item.sellingMethod || item.selling_method;
-  return sellingMethod === 'weight';
+  return sellingMethod === 'weight_custom' || sellingMethod === 'weight_fixed';
 }
 
 export function CartClient() {
@@ -41,7 +41,12 @@ export function CartClient() {
   }, []);
 
   const total = items.reduce(
-    (sum, item) => sum + item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity),
+    (sum, item) => {
+      if (item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') {
+        return sum + (item.locked ? item.price : item.price * (item.weight || 1));
+      }
+      return sum + item.price * item.quantity;
+    },
     0
   );
 
@@ -133,10 +138,14 @@ export function CartClient() {
                   <div>
                     <h3 className="font-medium">{item.name}</h3>
                     <p className="text-sm font-medium">
-                      {formatPrice(item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity))}
-                      {item.selling_method === 'weight' && item.weight_unit && (
+                      {formatPrice(
+                        (item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed')
+                          ? (item.locked ? item.price : item.price * (item.weight || 1))
+                          : item.price * item.quantity
+                      )}
+                      {(item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight_unit && (
                         <span className="text-xs text-muted-foreground ml-1">
-                          ({item.weight} {item.weight_unit})
+                          {!item.locked && `(${item.weight} ${item.weight_unit})`}
                         </span>
                       )}
                     </p>
@@ -152,39 +161,43 @@ export function CartClient() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   {isWeightBasedItem(item) ? (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleWeightChange(item.id, Math.max(0.1, (item.weight || 1) - 0.5))}
-                        disabled={(item.weight || 1) <= 0.5}
-                        className="border border-gray-200 rounded-md h-8 w-8"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-                      <Input
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        value={item.weight || 1}
-                        onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value) || 0.1)}
-                        onBlur={(e) => {
-                          if (!e.target.value || isNaN(parseFloat(e.target.value))) {
-                            handleWeightChange(item.id, 1);
-                          }
-                        }}
-                        className="w-16 text-center"
-                      />
-                      <span className="text-sm">{item.weight_unit}</span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleWeightChange(item.id, (item.weight || 1) + 0.5)}
-                        className="border border-gray-200 rounded-md h-8 w-8"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    item.locked ? (
+                      <span>{item.weight} {item.weight_unit}</span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleWeightChange(item.id, Math.max(0.1, (item.weight || 1) - 0.5))}
+                          disabled={(item.weight || 1) <= 0.5}
+                          className="border border-gray-200 rounded-md h-8 w-8"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <Input
+                          type="number"
+                          min="0.1"
+                          step="0.1"
+                          value={item.weight || 1}
+                          onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value) || 0.1)}
+                          onBlur={(e) => {
+                            if (!e.target.value || isNaN(parseFloat(e.target.value))) {
+                              handleWeightChange(item.id, 1);
+                            }
+                          }}
+                          className="w-16 text-center"
+                        />
+                        <span className="text-sm">{!item.locked && item.weight_unit}</span>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleWeightChange(item.id, (item.weight || 1) + 0.5)}
+                          className="border border-gray-200 rounded-md h-8 w-8"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )
                   ) : (
                     <div className="flex items-center gap-2">
                       <Button
@@ -239,11 +252,11 @@ export function CartClient() {
                 {items.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm py-1">
                     <span className="text-muted-foreground truncate max-w-[70%]">
-                      {item.name} {item.selling_method === 'weight' ? 
+                      {item.name} {(item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') ? 
                         `(${item.weight} ${item.weight_unit})` : 
                         `x ${item.quantity}`}
                     </span>
-                    <span className="font-medium">{formatPrice(item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity))}</span>
+                    <span className="font-medium">{formatPrice((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') ? (item.locked ? item.price : item.price * (item.weight || 1)) : item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>

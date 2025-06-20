@@ -32,6 +32,61 @@ export interface Database {
           avatar_url?: string | null
         }
       }
+      locations: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          address: string | null
+          is_active: boolean
+        }
+        Insert: {
+          id: string
+          created_at?: string
+          name: string
+          address?: string | null
+          is_active?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          name?: string
+          address?: string | null
+          is_active?: boolean
+        }
+      }
+      product_inventory: {
+        Row: {
+          id: string
+          created_at: string
+          product_id: string
+          location_id: string
+          unit_weight: number
+          quantity: number
+          unit_price: number
+          is_available: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          product_id: string
+          location_id: string
+          unit_weight: number
+          quantity: number
+          unit_price: number
+          is_available?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          product_id?: string
+          location_id?: string
+          unit_weight?: number
+          quantity?: number
+          unit_price?: number
+          is_available?: boolean
+        }
+      }
       products: {
         Row: {
           id: string
@@ -41,8 +96,8 @@ export interface Database {
           price: number
           category: string | null
           image_url: string | null
-          selling_method: string
           inventory_count: number | null
+          selling_method: 'unit' | 'weight_custom' | 'weight_fixed'
         }
         Insert: {
           id?: string
@@ -52,8 +107,8 @@ export interface Database {
           price: number
           category?: string | null
           image_url?: string | null
-          selling_method?: string
           inventory_count?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
         }
         Update: {
           id?: string
@@ -63,8 +118,8 @@ export interface Database {
           price?: number
           category?: string | null
           image_url?: string | null
-          selling_method?: string
           inventory_count?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
         }
       }
       orders: {
@@ -114,9 +169,11 @@ export interface Database {
           name: string
           quantity: number | null
           price: number
-          selling_method: string | null
           weight: number | null
+          selling_method: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit: string | null
+          locked: boolean
+          inventory_id: string | null
         }
         Insert: {
           id?: string
@@ -126,9 +183,11 @@ export interface Database {
           name: string
           quantity?: number | null
           price: number
-          selling_method?: string | null
           weight?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit?: string | null
+          locked?: boolean
+          inventory_id?: string | null
         }
         Update: {
           id?: string
@@ -138,9 +197,11 @@ export interface Database {
           name?: string
           quantity?: number | null
           price?: number
-          selling_method?: string | null
           weight?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit?: string | null
+          locked?: boolean
+          inventory_id?: string | null
         }
       }
       carts: {
@@ -168,7 +229,9 @@ export interface Database {
           product_id: string
           quantity: number
           weight: number | null
+          selling_method: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit: string | null
+          locked: boolean
         }
         Insert: {
           id?: string
@@ -177,7 +240,9 @@ export interface Database {
           product_id: string
           quantity?: number
           weight?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit?: string | null
+          locked?: boolean
         }
         Update: {
           id?: string
@@ -186,7 +251,9 @@ export interface Database {
           product_id?: string
           quantity?: number
           weight?: number | null
+          selling_method?: 'unit' | 'weight_custom' | 'weight_fixed'
           weight_unit?: string | null
+          locked?: boolean
         }
       }
     }

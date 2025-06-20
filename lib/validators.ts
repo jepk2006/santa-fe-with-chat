@@ -11,7 +11,7 @@ const currency = z
   );
 
 // Available selling methods
-export const SELLING_METHODS = ['unit', 'weight'] as const;
+export const SELLING_METHODS = ['unit', 'weight_custom', 'weight_fixed'] as const;
 export type SellingMethod = typeof SELLING_METHODS[number];
 
 // Available weight units
@@ -25,11 +25,7 @@ export const insertProductSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   price: z.coerce.number().min(0, 'Price must be a positive number'),
   selling_method: z.enum(SELLING_METHODS).default('unit'),
-  weight_unit: z.enum(WEIGHT_UNITS).optional().nullable(),
-  min_weight: z.coerce.number().min(0).optional().nullable(),
   in_stock: z.boolean().default(true),
-  rating: z.coerce.number().min(0).max(5, 'Rating must be between 0 and 5'),
-  num_reviews: z.coerce.number().int().min(0, 'Number of reviews must be a positive number'),
   is_featured: z.boolean().default(false),
   images: z.array(z.string()).min(1, 'At least one image is required'),
   category: z.string().min(1, 'Category is required'),
@@ -52,9 +48,10 @@ export const cartItemSchema = z.object({
   quantity: z.number().nonnegative('Quantity must be a positive number'),
   image: z.string().min(1, 'Image is required'),
   price: z.number().nonnegative('Price must be a positive number'),
-  selling_method: z.enum(SELLING_METHODS).default('unit'),
-  weight_unit: z.enum(WEIGHT_UNITS).optional().nullable(),
   weight: z.number().optional().nullable(),
+  selling_method: z.enum(SELLING_METHODS).optional(),
+  weight_unit: z.string().optional().nullable(),
+  locked: z.boolean().optional(),
 });
 
 export const insertCartSchema = z.object({

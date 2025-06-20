@@ -66,7 +66,7 @@ export function LoginForm() {
 
       if (cartItems.length > 0) {
         const total = cartItems.reduce(
-          (sum, item) => sum + item.price * (item.selling_method === 'weight' ? (item.weight || 1) : item.quantity),
+          (sum, item) => sum + item.price * ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') ? (item.weight || 1) : item.quantity),
           0
         );
         

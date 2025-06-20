@@ -9,9 +9,10 @@ interface CartItem {
   price: number;
   image: string;
   quantity: number;
-  selling_method: 'unit' | 'weight'; // Use snake_case for consistency with API
+  selling_method: 'unit' | 'weight_custom' | 'weight_fixed'; // Use snake_case for consistency with API
   weight_unit?: string;
   weight?: number | null;
+  locked?: boolean;
 }
 
 interface CartStore {
@@ -32,35 +33,31 @@ export const useCart = create<CartStore>()(
       addItem: (item) =>
         set((state) => {
           const existingItem = state.items.find((i) => i.id === item.id);
-          
-          // If item already exists in cart
+
+          // If exact unit already exists and is locked, ignore duplicate
+          if (existingItem && existingItem.locked) {
+            return state; // no change
+          }
+
+          // If item already exists and is NOT locked, merge as before
           if (existingItem) {
             return {
               items: state.items.map((i) => {
                 if (i.id === item.id) {
-                  // Weight-based products: add the weights
-                  if (item.selling_method === 'weight' && item.weight) {
+                  // Weight-based products: add weights
+                  if ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight) {
                     const currentWeight = i.weight || 0;
-                    const newWeight = item.weight;
-                    return { 
-                      ...i, 
-                      weight: currentWeight + newWeight 
-                    };
+                    return { ...i, weight: currentWeight + item.weight };
                   }
-                  // Unit-based products: add the quantities
-                  else {
-                    return { 
-                      ...i, 
-                      quantity: i.quantity + item.quantity 
-                    };
-                  }
+                  // Unit-based products: accumulate quantity
+                  return { ...i, quantity: i.quantity + item.quantity };
                 }
                 return i;
               }),
             };
           }
-          
-          // New item not in cart
+
+          // Item not yet in cart
           return { items: [...state.items, item] };
         }),
       removeItem: (id) =>
@@ -77,7 +74,7 @@ export const useCart = create<CartStore>()(
       updateWeight: (id, weight) =>
         set((state) => ({
           items: state.items.map((item) =>
-            item.id === id ? { ...item, weight } : item
+            item.id === id && !item.locked ? { ...item, weight } : item
           ),
         })),
     }),

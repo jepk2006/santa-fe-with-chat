@@ -21,14 +21,7 @@ export type Product = {
   isFeatured: boolean;
   banner: string | null;
   price: number;
-  rating: number;
-  numReviews: number;
-  selling_method?: 'unit' | 'weight';
-  sellingMethod?: 'unit' | 'weight';
-  weight_unit?: string | null;
-  weightUnit?: string | null;
-  min_weight?: number | null;
-  minWeight?: number | null;
+  selling_method?: 'unit' | 'weight_custom' | 'weight_fixed';
   createdAt: string;
   updatedAt: string;
 };

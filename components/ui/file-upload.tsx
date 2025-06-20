@@ -81,7 +81,7 @@ export const FileUpload = ({
           type="file"
           accept={Object.entries(accept)
             .map(([type, exts]) => 
-              exts.length > 0 ? exts.join(',') : type
+              Array.isArray(exts) && exts.length > 0 ? exts.join(',') : type
             )
             .join(',')}
           multiple={maxFiles > 1}
