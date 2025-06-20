@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/table';
 import { formatPrice } from '@/lib/utils';
 import { CartItem } from '@/types';
-import { AppError, ErrorResponse, SuccessResponse } from '@/lib/types/error';
+import { AppError } from '@/lib/types/error';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
@@ -21,34 +21,30 @@ import {
   updateCartItemQuantity,
 } from '@/lib/actions/cart.actions';
 import { Input } from '@/components/ui/input';
-import { Scale, Package } from 'lucide-react';
+import { Scale, Package, MapPin, Tag, Info } from 'lucide-react';
 
 interface CartTableProps {
   items: CartItem[];
-  userId: string;
 }
 
-function isWeightBasedItem(item: any) {
+function isWeightBasedItem(item: CartItem) {
   // Check both camelCase and snake_case properties for backward compatibility
-  const sellingMethod = item.sellingMethod || item.selling_method;
-  return sellingMethod === 'weight_custom' || sellingMethod === 'weight_fixed';
+  return item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed';
 }
 
-function isWeightCustomItem(item: any) {
-  const sellingMethod = item.sellingMethod || item.selling_method;
-  return sellingMethod === 'weight_custom';
+function isWeightCustomItem(item: CartItem) {
+  return item.selling_method === 'weight_custom';
 }
 
-function isWeightFixedItem(item: any) {
-  const sellingMethod = item.sellingMethod || item.selling_method;
-  return sellingMethod === 'weight_fixed';
+function isWeightFixedItem(item: CartItem) {
+  return item.selling_method === 'weight_fixed';
 }
 
-function getWeightUnit(item: any) {
-  return item.weight_unit || item.weightUnit;
+function getWeightUnit(item: CartItem) {
+  return item.weight_unit || (item as any).weightUnit;
 }
 
-const CartTable = ({ items, userId }: CartTableProps) => {
+const CartTable = ({ items }: CartTableProps) => {
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [weights, setWeights] = useState<Record<string, number>>({});
@@ -111,8 +107,8 @@ const CartTable = ({ items, userId }: CartTableProps) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Artículo</TableHead>
-          <TableHead>Cantidad</TableHead>
+          <TableHead className="w-1/2">Información del Producto</TableHead>
+          <TableHead>Cantidad/Peso</TableHead>
           <TableHead>Precio</TableHead>
           <TableHead>Subtotal</TableHead>
           <TableHead>Acciones</TableHead>
@@ -129,29 +125,79 @@ const CartTable = ({ items, userId }: CartTableProps) => {
           return (
             <TableRow key={item.id}>
               <TableCell>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-start gap-3'>
                   <Image
                     src={item.image}
                     alt={item.name}
-                    width={50}
-                    height={50}
-                    className='rounded-md'
+                    width={80}
+                    height={80}
+                    className='rounded-lg object-cover'
                   />
+                  <div className="flex-1 space-y-2">
                   <div>
-                    <Link href={`/product/${item.id}`} className='link hover:underline'>
+                      <Link href={`/product/${(item as any).product_id ?? item.id}`} className='font-medium text-lg hover:underline text-blue-600'>
                       {item.name}
                     </Link>
-                    <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                    </div>
+                    
+                    {/* Selling Method Badge */}
+                    <div className="flex items-center gap-2">
                       {isWeightBased ? (
-                        <span className="flex items-center">
+                        <div className="flex items-center bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">
                           <Scale className="h-3 w-3 mr-1" />
-                          {isWeightCustomItem(item) ? 'By weight (custom)' : 'By weight (fixed unit)'}
-                        </span>
+                          {isWeightCustomItem(item) ? 'Peso Variable' : 'Peso Fijo'}
+                        </div>
                       ) : (
-                        <span className="flex items-center">
+                        <div className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
                           <Package className="h-3 w-3 mr-1" />
-                          By unit
-                        </span>
+                          Por Unidad
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="space-y-1 text-sm text-gray-600">
+                      {isWeightFixedItem(item) && (item as any).location_name && (
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 text-gray-400" />
+                          <span className="font-medium">{(item as any).location_name}</span>
+                          {(item as any).location_address && (
+                            <span className="text-gray-500">• {(item as any).location_address}</span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {isWeightBased && item.weight && (
+                        <div className="flex items-center gap-1">
+                          <Scale className="h-3 w-3 text-gray-400" />
+                          <span>Peso: <strong>{item.weight} {getWeightUnit(item)}</strong></span>
+                          {isWeightFixedItem(item) && (
+                            <span className="text-gray-500">• Unidad específica</span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {isWeightCustomItem(item) && (
+                        <div className="flex items-center gap-1">
+                          <Info className="h-3 w-3 text-gray-400" />
+                          <span className="text-gray-500">Peso seleccionado por cliente</span>
+                        </div>
+                      )}
+                      
+                      {(item as any).inventory_id && (
+                        <div className="flex items-center gap-1">
+                          <Tag className="h-3 w-3 text-gray-400" />
+                          <span className="text-gray-400 text-xs">ID: {(item as any).inventory_id.slice(-8)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Price Information */}
+                    <div className="text-sm">
+                      <span className="text-gray-500">Precio unitario: </span>
+                      <span className="font-medium">{formatPrice(item.price)}</span>
+                      {isWeightCustomItem(item) && getWeightUnit(item) && (
+                        <span className="text-gray-500">/{getWeightUnit(item)}</span>
                       )}
                     </div>
                   </div>
@@ -165,16 +211,16 @@ const CartTable = ({ items, userId }: CartTableProps) => {
                       <span>{item.weight} {getWeightUnit(item)}</span>
                     ) : (
                       <>
-                        <Input
-                          type="number"
-                          min={0.1}
-                          step={0.1}
-                          value={weights[item.id] || item.weight || 0}
-                          onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value))}
-                          className="w-20 h-9"
-                          disabled={isPending}
-                        />
-                        <span>{getWeightUnit(item)}</span>
+                    <Input
+                      type="number"
+                      min={0.1}
+                      step={0.1}
+                      value={weights[item.id] || item.weight || 0}
+                      onChange={(e) => handleWeightChange(item.id, parseFloat(e.target.value))}
+                      className="w-20 h-9"
+                      disabled={isPending}
+                    />
+                    <span>{getWeightUnit(item)}</span>
                       </>
                     )}
                   </div>
@@ -202,10 +248,16 @@ const CartTable = ({ items, userId }: CartTableProps) => {
               </TableCell>
 
               <TableCell>
-                <div>
-                  {formatPrice(isWeightFixedItem(item) ? item.price : item.price)}
+                <div className="space-y-1">
+                  <div className="font-medium">{formatPrice(item.price)}</div>
                   {isWeightCustomItem(item) && getWeightUnit(item) && (
-                    <span className="text-xs text-muted-foreground">/{getWeightUnit(item)}</span>
+                    <div className="text-xs text-gray-500">por {getWeightUnit(item)}</div>
+                  )}
+                  {isWeightFixedItem(item) && (
+                    <div className="text-xs text-gray-500">unidad fija</div>
+                  )}
+                  {!isWeightBased && (
+                    <div className="text-xs text-gray-500">por unidad</div>
                   )}
                 </div>
               </TableCell>

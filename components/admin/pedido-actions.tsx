@@ -173,7 +173,7 @@ async function updateDeliveryStatus(orderId: string, isDelivered: boolean) {
     
     const currentTimestamp = new Date().toISOString();
     
-    let updateData: {
+    const updateData: {
       is_delivered: boolean;
       delivered_at: string | null;
       status?: 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled';

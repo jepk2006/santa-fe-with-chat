@@ -29,7 +29,7 @@ interface OrderItem {
   name?: string;
   price?: number;
   image?: string;
-  selling_method?: 'unit' | 'weight';
+  selling_method?: 'unit' | 'weight_custom' | 'weight_fixed';
   weight?: number | null;
   weight_unit?: string | null;
 }
@@ -259,7 +259,7 @@ export default function PedidosPage() {
                         {pedido.order_items.map((item) => (
                           <div key={`${pedido.id}-${item.product_id}-${item.quantity}-${item.name}`} className="text-xs mb-1">
                             <span className="font-medium">{item.name || 'Producto'}</span>
-                            {item.selling_method === 'weight' && item.weight ? 
+                            {item.selling_method !== 'unit' && item.weight ? 
                               ` - ${item.weight} ${item.weight_unit || ''}` : 
                               ` x ${item.quantity}`}
                             {item.price && 

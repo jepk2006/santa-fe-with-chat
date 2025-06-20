@@ -97,7 +97,7 @@ async function updateOrderStatus(
 ) {
   try {
     // Create update data with status
-    let updateData: any = {
+    const updateData: any = {
       status: status
     };
     
@@ -144,7 +144,7 @@ async function updateOrderStatus(
 // Function to update payment status
 async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableToUse: string) {
   try {
-    let updateData: any = {
+    const updateData: any = {
       is_paid: isPaid,
       paid_at: isPaid ? new Date().toISOString() : null,
     };
@@ -198,7 +198,7 @@ async function updateOrderPaymentStatus(orderId: string, isPaid: boolean, tableT
 // Function to update delivery status
 async function updateOrderDeliveryStatus(orderId: string, isDelivered: boolean, tableToUse: string) {
   try {
-    let updateData: any = {
+    const updateData: any = {
       is_delivered: isDelivered,
       delivered_at: isDelivered ? new Date().toISOString() : null,
     };

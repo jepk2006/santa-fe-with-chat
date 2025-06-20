@@ -28,21 +28,27 @@ export function AdminNav({ user }: AdminNavProps) {
 
   return (
     <header className='w-full bg-white sticky top-0 z-40 border-b'>
-      <div className='max-w-7xl mx-auto flex items-center h-20 px-6'>
-        <Link href='/' className='flex items-center flex-shrink-0 mr-8'>
+      <div className='max-w-7xl mx-auto flex items-center justify-between h-20 px-4 sm:px-6'>
+        {/* Logo */}
+        <Link href='/' className='flex items-center flex-shrink-0 h-full py-2'>
+          <div className="relative h-full aspect-[3/1]">
           <Image
-            src='/images/logo.png'
+              src='/images/logo2.png'
             alt='Logo'
-            width={200}
-            height={200}
-            className='object-contain w-200 h-200'
+              fill
+              className='object-contain'
             priority
           />
+          </div>
         </Link>
-        <nav className='flex-1 flex justify-center'>
+
+        {/* Desktop Navigation - Hidden on mobile */}
+        <nav className='hidden lg:flex flex-1 justify-center'>
           <MainNav className='flex gap-8' user={safeUser} />
         </nav>
-        <div className='flex items-center gap-4 ml-8'>
+
+        {/* Right Section - Menu for mobile, always visible */}
+        <div className='flex items-center'>
           <Menu user={safeUser} isAdminPage={true} />
         </div>
       </div>

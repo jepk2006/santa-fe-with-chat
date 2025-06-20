@@ -11,21 +11,21 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
     // Await params per Next.js 14 requirement
     const { id } = await params;
 
-    await requireAdmin();
+  await requireAdmin();
 
     if (!id) {
       console.error('No product ID provided');
       notFound();
     }
 
-    const product = await getProductById(id);
+  const product = await getProductById(id);
     const inventory = await getProductInventory(id);
     if (!product) {
       console.error('Product not found');
       notFound();
     }
 
-    return (
+  return (
       <div className="space-y-8">
         <div>
           <h2 className="text-2xl font-bold">Editar producto</h2>
@@ -35,8 +35,8 @@ export default async function ProductEditPage({ params }: { params: Promise<{ id
         <div className="space-y-8">
           <ProductEditForm product={product} initialInventory={inventory} />
         </div>
-      </div>
-    );
+    </div>
+  );
   } catch (error) {
     console.error('Error in ProductEditPage:', error);
     notFound();

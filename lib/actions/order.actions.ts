@@ -384,7 +384,7 @@ export async function getOrderSummary() {
       
       // Calculate item total based on selling method
       let itemTotal = 0;
-      if (item.selling_method === 'weight' && item.weight) {
+      if ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight) {
         itemTotal = Number(item.price) * Number(item.weight);
       } else {
         itemTotal = Number(item.price) * Number(item.quantity || 1);
@@ -414,7 +414,7 @@ export async function getOrderSummary() {
       // Use item name directly or look up in the separate product map we created
       const productDetails = productDetailsMap[productId];
       const productName = item.name || (productDetails?.name) || 'Unknown Product';
-      const isWeightBased = item.selling_method === 'weight';
+      const isWeightBased = item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed';
       
       if (!productSales[productId]) {
         productSales[productId] = { 
@@ -445,7 +445,7 @@ export async function getOrderSummary() {
       
       // Calculate revenue based on selling method
       let itemRevenue = 0;
-      if (item.selling_method === 'weight' && item.weight) {
+      if ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight) {
         itemRevenue = Number(item.price) * Number(item.weight);
       } else {
         itemRevenue = Number(item.price) * Number(item.quantity || 1);
@@ -699,6 +699,51 @@ export async function getOrdersByUserOrPhone(userId?: string, phoneNumber?: stri
 }
 
 /* -------------------------------------------------------------------------- */
+/*                          INVENTORY MANAGEMENT                               */
+/* -------------------------------------------------------------------------- */
+async function removeInventoryUnits(orderId: string, supabase: any) {
+  try {
+    // Get order items with weight_fixed selling method and inventory_id
+    const { data: orderItems, error: fetchError } = await supabase
+      .from('order_items')
+      .select('inventory_id, selling_method, name')
+      .eq('order_id', orderId)
+      .eq('selling_method', 'weight_fixed')
+      .not('inventory_id', 'is', null);
+
+    if (fetchError) {
+      console.error('Error fetching order items for inventory removal:', fetchError);
+      return { success: false, message: 'Failed to fetch order items' };
+    }
+
+    if (!orderItems || orderItems.length === 0) {
+      // No weight_fixed items with inventory_id, nothing to remove
+      return { success: true, message: 'No inventory units to remove' };
+    }
+
+    // Remove the specific inventory units
+    const inventoryIds = orderItems.map((item: any) => item.inventory_id);
+    const { error: deleteError } = await supabase
+      .from('product_inventory')
+      .delete()
+      .in('id', inventoryIds);
+
+    if (deleteError) {
+      console.error('Error removing inventory units:', deleteError);
+      return { success: false, message: 'Failed to remove inventory units' };
+    }
+
+    console.log(`Removed ${inventoryIds.length} inventory units for order ${orderId}:`, 
+                orderItems.map((item: any) => item.name));
+
+    return { success: true, message: `Removed ${inventoryIds.length} inventory units` };
+  } catch (error) {
+    console.error('Error in removeInventoryUnits:', error);
+    return { success: false, message: 'Unexpected error removing inventory' };
+  }
+}
+
+/* -------------------------------------------------------------------------- */
 /*                          MARK ORDER AS PAID                                */
 /* -------------------------------------------------------------------------- */
 export async function markOrderAsPaid(orderId: string) {
@@ -728,6 +773,14 @@ export async function markOrderAsPaid(orderId: string) {
 
   if (error) {
     return { success: false, message: 'Could not update order status.' };
+  }
+
+  // Remove inventory units for weight_fixed products
+  const inventoryResult = await removeInventoryUnits(orderId, supabase);
+  if (!inventoryResult.success) {
+    console.error('Failed to remove inventory units:', inventoryResult.message);
+    // Log the error but don't fail the payment update
+    // The payment is successful, but inventory cleanup failed
   }
 
   revalidatePath(`/account/order/${orderId}`);
@@ -802,7 +855,7 @@ export async function createOrderAfterPayment({
     return { success: false, message: 'Could not create order.' };
   }
 
-  // Copy cart items to order items
+  // Copy cart items to order items, including inventory_id for weight_fixed items
   const orderItemsData = cartItems.map((item: any) => ({
     order_id: order.id,
     product_id: item.product_id || item.id,
@@ -812,6 +865,8 @@ export async function createOrderAfterPayment({
     selling_method: item.selling_method,
     weight: item.weight,
     weight_unit: item.weight_unit,
+    locked: item.locked || false,
+    inventory_id: item.inventory_id || null, // Include inventory_id for weight_fixed items
   }));
 
   const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
@@ -820,6 +875,14 @@ export async function createOrderAfterPayment({
     // If items fail, we should ideally roll back the order creation.
     await supabase.from('orders').delete().eq('id', order.id);
     return { success: false, message: 'Could not save order items.' };
+  }
+
+  // Remove inventory units for weight_fixed products since payment was successful
+  const inventoryResult = await removeInventoryUnits(order.id, supabase);
+  if (!inventoryResult.success) {
+    console.error('Failed to remove inventory units:', inventoryResult.message);
+    // Log the error but don't fail the order creation
+    // The order is successful, but inventory cleanup failed
   }
 
   // Clear the cart only if it's not a guest cart and the user is the same

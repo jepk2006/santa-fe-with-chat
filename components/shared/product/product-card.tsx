@@ -84,21 +84,21 @@ const ProductCard = ({ product }: { product: Product }) => {
                     {product.inStock && (
                       <ProductPrice 
                         value={Number(product.price)} 
-                        weightUnit={sellingMethod === 'weight' ? weightUnit : undefined} 
+                        weightUnit={(sellingMethod === 'weight_custom' || sellingMethod === 'weight_fixed') ? weightUnit : undefined} 
                         className="text-right font-bold xl:text-lg 2xl:text-xl" 
                       />
                     )}
                     {sellingMethod && (
                       <div className="flex items-center text-xs xl:text-sm text-muted-foreground">
-                        {sellingMethod === 'weight' ? (
+                        {sellingMethod === 'weight_custom' || sellingMethod === 'weight_fixed' ? (
                           <>
                             <Scale className="h-3 w-3 mr-1" />
-                            <span>By weight</span>
+                            <span>Por peso</span>
                           </>
                         ) : (
                           <>
                             <Package className="h-3 w-3 mr-1" />
-                            <span>By unit</span>
+                            <span>Por unidad</span>
                           </>
                         )}
                       </div>

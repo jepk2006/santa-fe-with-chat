@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Scale, Package } from 'lucide-react';
+import { Scale, Package, MapPin } from 'lucide-react';
 import { LOCATIONS } from '@/lib/constants/locations';
 
 interface InventoryUnit {
@@ -108,7 +108,7 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
       enrichUnits();
     }
   }, [inventory]);
-
+  
   const handleAddToCart = () => {
     if (isWeightFixed && inventory && inventory.length > 0) {
       // For weight_fixed products with inventory units
@@ -123,6 +123,9 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
           toast.error('Ese corte ya está en tu carrito');
           return;
         }
+        // Find location information for this unit
+        const location = LOCATIONS.find(loc => loc.id === unit.storeId || loc.id === selectedStoreId);
+        
         addItem({
           id: unit.id,
           name: product.name,
@@ -133,6 +136,12 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
           weight_unit: 'kg',
           weight: unit.unit_weight,
           locked: true,
+          // Add location information
+          location_id: unit.location_id,
+          location_name: location?.name,
+          location_address: location?.address,
+          inventory_id: unit.id,
+          product_id: product.id,
         });
         addedCount++;
       });
@@ -151,19 +160,22 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
         locked: false,
       });
     } else {
-      // For unit-based products
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images[0],
-        quantity: 1,
+      // For unit-based products - add the specified quantity
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0],
+        quantity: quantity,
         selling_method: 'unit',
       });
     }
+    
     const description = isWeightFixed && inventory && inventory.length > 0
       ? `${selectedUnitIds.size} unidades añadidas al carrito`
-      : `${product.name} añadido al carrito`;
+      : isWeightCustom 
+        ? `${product.name} (${weight}kg) añadido al carrito`
+        : `${product.name} (${quantity}x) añadido al carrito`;
     
     toast.success('Añadido al carrito', {
       description,
@@ -208,11 +220,11 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
                       <span>Sold by weight (customer chooses)</span>
                     </>
                  ) : isWeightFixed ? (
-                    <>
-                      <Scale className="h-4 w-4 mr-1" />
+                  <>
+                    <Scale className="h-4 w-4 mr-1" />
                       <span>Sold by weight (fixed units)</span>
-                    </>
-                  ) : (
+                  </>
+                ) : (
                   <>
                     <Package className="h-4 w-4 mr-1" />
                     <span>Sold by unit</span>
@@ -227,6 +239,31 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
             
             {product.inStock ? (
               <>
+                {/* Unit-based products - show quantity selector */}
+                {!isWeightBased ? (
+                  <div className="space-y-3">
+                    <Label htmlFor="quantity">Cantidad</Label>
+                    <div className="flex items-center space-x-3">
+                      <Input
+                        id="quantity"
+                        type="number"
+                        min={1}
+                        value={quantity}
+                        onChange={(e) => {
+                          const newQuantity = parseInt(e.target.value);
+                          setQuantity(isNaN(newQuantity) ? 1 : newQuantity);
+                        }}
+                        className="w-24 border border-gray-300 bg-white"
+                      />
+                      <span className="text-sm font-medium text-gray-700">unidad(es)</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Total: {formatPrice(product.price * quantity)}
+                    </p>
+                  </div>
+                ) : null}
+
+                {/* Weight custom - customer chooses weight */}
                 {isWeightCustom ? (
                   <div className="space-y-3">
                     <Label htmlFor="weight">Selecciona peso (kg)</Label>
@@ -251,6 +288,11 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
                         />
                         <span className="text-sm font-medium text-gray-700">kg</span>
                       </div>
+                      {Number(minWeight) > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          Peso mínimo: {Number(minWeight)} kg
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground">
                         Total: {isNaN(weight) ? "-" : formatPrice(product.price * weight)}
                       </p>
@@ -258,43 +300,92 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
                   </div>
                 ) : null}
 
+                {/* Weight fixed - pre-packaged units */}
                 {isWeightFixed && inventory && inventory.length > 0 ? (
                     <div className="space-y-4">
-                                              <h4 className="font-medium">Unidades con peso fijo disponibles</h4>
-                      {/* Store selector */}
-                      {selectedStoreId && (
-                        <select
-                          className="border border-gray-300 rounded p-2 w-full mb-2"
-                          value={selectedStoreId || ''}
-                          onChange={(e) => {
-                            setSelectedStoreId(e.target.value);
-                            setSelectedUnitIds(new Set());
-                          }}
-                        >
-                          {LOCATIONS.map((loc) => (
-                            <option key={loc.id} value={loc.id}>{loc.name}</option>
-                          ))}
-                        </select>
-                      )}
-                      <div className="space-y-1 max-h-60 overflow-y-auto border rounded p-2">
-                        {unitsWithDistance.filter(u=>u.storeId===selectedStoreId).length === 0 ? (
-                          <p className="text-sm text-muted-foreground">No hay unidades disponibles en esta sucursal.</p>
-                        ) : (
-                          unitsWithDistance.filter(u=>u.storeId===selectedStoreId).map((unit) => (
-                            <label key={unit.id} className="flex items-center gap-2 text-sm">
-                              <input
-                                type="checkbox"
-                                value={unit.id}
-                                checked={selectedUnitIds.has(unit.id)}
-                                onChange={(e) => {
-                                  const newSet = new Set(selectedUnitIds);
-                                  if (e.target.checked) newSet.add(unit.id); else newSet.delete(unit.id);
-                                  setSelectedUnitIds(newSet);
-                                }}
-                              />
-                              <span>{unit.unit_weight} kg – {unit.unit_price.toFixed(2)} Bs.</span>
-                            </label>
-                          ))
+                      <h4 className="font-medium">Unidades con peso fijo disponibles</h4>
+                      
+                      {/* Location Selection Section */}
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                        <div className="flex items-center mb-2">
+                          <MapPin className="h-4 w-4 mr-2 text-blue-600" />
+                          <h5 className="font-medium text-blue-800">Selecciona ubicación de disponibilidad</h5>
+                        </div>
+                        <p className="text-sm text-blue-700 mb-3">
+                          Elige la sucursal para ver las unidades disponibles. Cada ubicación tiene diferentes unidades con pesos específicos.
+                        </p>
+                        {selectedStoreId && (
+                          <select
+                            className="border border-blue-300 rounded-lg p-3 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value={selectedStoreId || ''}
+                            onChange={(e) => {
+                              setSelectedStoreId(e.target.value);
+                              setSelectedUnitIds(new Set());
+                            }}
+                          >
+                            {LOCATIONS.map((loc) => (
+                              <option key={loc.id} value={loc.id}>{loc.name}</option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+
+                      {/* Available Units Section */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-medium text-gray-800">Unidades disponibles</h5>
+                          {selectedStoreId && (
+                            <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                              📍 {LOCATIONS.find(loc => loc.id === selectedStoreId)?.name}
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-2 max-h-60 overflow-y-auto border rounded-lg p-3 bg-gray-50">
+                          {unitsWithDistance.filter(u=>u.storeId===selectedStoreId).length === 0 ? (
+                            <div className="text-center py-4">
+                              <p className="text-sm text-gray-500">No hay unidades disponibles en esta sucursal.</p>
+                              <p className="text-xs text-gray-400 mt-1">Intenta seleccionar otra ubicación.</p>
+                  </div>
+                ) : (
+                            unitsWithDistance.filter(u=>u.storeId===selectedStoreId).map((unit) => (
+                              <label key={unit.id} className="flex items-center gap-3 p-2 rounded-md hover:bg-white border border-transparent hover:border-gray-200 cursor-pointer transition-all">
+                                <input
+                                  type="checkbox"
+                                  value={unit.id}
+                                  checked={selectedUnitIds.has(unit.id)}
+                                  onChange={(e) => {
+                                    const newSet = new Set(selectedUnitIds);
+                                    if (e.target.checked) newSet.add(unit.id); else newSet.delete(unit.id);
+                                    setSelectedUnitIds(newSet);
+                                  }}
+                                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                                />
+                                <div className="flex-1 flex justify-between items-center">
+                                  <span className="text-sm font-medium text-gray-700">
+                                    {unit.unit_weight} kg
+                                  </span>
+                                  <span className="text-sm font-semibold text-gray-800">
+                                    {unit.unit_price.toFixed(2)} Bs.
+                                  </span>
+                                </div>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        
+                        {selectedUnitIds.size > 0 && (
+                          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                            <p className="text-sm text-green-800">
+                              <span className="font-medium">{selectedUnitIds.size} unidad(es) seleccionada(s)</span>
+                              <span className="text-green-600 ml-2">
+                                • Total: {Array.from(selectedUnitIds).reduce((total, id) => {
+                                  const unit = inventory.find(u => u.id === id);
+                                  return total + (unit?.unit_price || 0);
+                                }, 0).toFixed(2)} Bs.
+                              </span>
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -303,7 +394,9 @@ export default function ProductDetails({ product, user, inventory }: ProductDeta
                 <Button
                   className="w-full"
                   onClick={handleAddToCart}
-                  disabled={isWeightFixed && inventory && inventory.length > 0 && selectedUnitIds.size === 0}
+                  disabled={(isWeightFixed && inventory && inventory.length > 0 && selectedUnitIds.size === 0) || 
+                           (isWeightCustom && (weight <= 0 || isNaN(weight))) ||
+                           (!isWeightBased && quantity <= 0)}
                 >
                   Añadir al carrito
                 </Button>

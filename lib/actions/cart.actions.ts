@@ -155,7 +155,7 @@ export async function addItemToCart(
 
     const total_price = updatedItems.reduce(
       (sum: number, item: any) => {
-        if (item.selling_method === 'weight' && item.weight) {
+        if ((item.selling_method === 'weight_custom' || item.selling_method === 'weight_fixed') && item.weight) {
           return sum + (item.price * item.weight);
         }
         return sum + (item.price * item.quantity);
@@ -256,7 +256,10 @@ export async function updateCartItemQuantity(
       if (item.product_id === productId) {
         // If weight is provided, it's a weight update for a weight-based product
         const isWeightBasedProduct = 
-          item.selling_method === 'weight' || item.sellingMethod === 'weight';
+          item.selling_method === 'weight_custom' || 
+          item.selling_method === 'weight_fixed' || 
+          item.sellingMethod === 'weight_custom' ||
+          item.sellingMethod === 'weight_fixed';
           
         if (weight !== undefined && isWeightBasedProduct) {
           return { ...item, weight };
@@ -271,7 +274,10 @@ export async function updateCartItemQuantity(
     const total_price = updatedItems.reduce(
       (sum: number, item: any) => {
         const isWeightBased = 
-          item.selling_method === 'weight' || item.sellingMethod === 'weight';
+          item.selling_method === 'weight_custom' || 
+          item.selling_method === 'weight_fixed' || 
+          item.sellingMethod === 'weight_custom' ||
+          item.sellingMethod === 'weight_fixed';
         
         if (isWeightBased && item.weight) {
           return sum + (item.price * item.weight);

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // Create update data with status
-    let updateData: any = {
+    const updateData: any = {
       status: status
     };
     

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     const currentTimestamp = new Date().toISOString();
     
     // Build update data
-    let updateData: {
+    const updateData: {
       is_delivered: boolean;
       delivered_at: string | null;
       status?: string;

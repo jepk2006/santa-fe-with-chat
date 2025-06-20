@@ -52,7 +52,7 @@ interface ProductFormProps {
     category: string;
     brand: string;
     banner: string | null;
-    sellingMethod?: 'unit' | 'weight';
+    sellingMethod?: 'unit' | 'weight_custom' | 'weight_fixed';
   };
   productId?: string;
   generalInfo?: React.ReactNode;
@@ -376,11 +376,47 @@ export function ProductImages({ form, onFieldChange }: { form: any; onFieldChang
   const banner = form.watch('banner');
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
         <h3 className="text-xl font-semibold">Imágenes del Producto</h3>
         <p className="text-sm text-gray-500">Agrega imágenes del producto. La primera imagen será la principal.</p>
       </div>
+
+      {/* Current Images Preview */}
+      {images && images.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-gray-700">Current Images</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {images.map((url: string, index: number) => (
+              <div key={url} className="relative group aspect-square rounded-lg overflow-hidden border border-gray-200">
+                <Image
+                  src={url}
+                  alt={`Product image ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                />
+                {index === 0 && (
+                  <div className="absolute top-2 left-2 bg-primary/90 text-white text-xs px-2 py-1 rounded-md">
+                    Main Image
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newImages = images.filter((i: string) => i !== url);
+                    form.setValue('images', newImages);
+                    onFieldChange?.('images');
+                  }}
+                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4">
         <FormField
@@ -401,6 +437,8 @@ export function ProductImages({ form, onFieldChange }: { form: any; onFieldChang
                   }}
                   endpoint={'productImage' as any}
                   accept={'image/*' as any}
+                  maxFiles={5}
+                  isMultiple={true}
                 />
               </FormControl>
               <FormMessage />
@@ -409,32 +447,60 @@ export function ProductImages({ form, onFieldChange }: { form: any; onFieldChang
         />
 
         {isFeatured && (
-          <FormField
-            control={form.control}
-            name="banner"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Imagen de banner</FormLabel>
-                <FormControl>
-                  <UploadAdapter
-                    value={field.value ? [field.value] : []}
-                    onChange={(urls) => {
-                      field.onChange(urls[0] || null);
-                      onFieldChange?.('banner');
-                    }}
-                    onRemove={() => {
-                      field.onChange(null);
-                      onFieldChange?.('banner');
-                    }}
-                    endpoint={'bannerImage' as any}
-                    accept={'image/*' as any}
-                    maxFiles={1}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="pt-4 border-t">
+            <FormField
+              control={form.control}
+              name="banner"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Banner Image</FormLabel>
+                  {banner && (
+                    <div className="mb-4 relative group aspect-[21/9] rounded-lg overflow-hidden border border-gray-200">
+                      <Image
+                        src={banner}
+                        alt="Banner image"
+                        fill
+                        className="object-cover"
+                        sizes="100vw"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          field.onChange(null);
+                          onFieldChange?.('banner');
+                        }}
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-6 h-6 text-white" />
+                      </button>
+                    </div>
+                  )}
+                  <FormControl>
+                    <UploadAdapter
+                      value={field.value ? [field.value] : []}
+                      onChange={(urls) => {
+                        field.onChange(urls[0] || null);
+                        onFieldChange?.('banner');
+                      }}
+                      onRemove={() => {
+                        field.onChange(null);
+                        onFieldChange?.('banner');
+                      }}
+                      endpoint={'bannerImage' as any}
+                      accept={'image/*' as any}
+                      maxFiles={1}
+                      label="Upload Banner"
+                      helpText="Recommended aspect ratio: 21:9"
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This banner will be shown when the product is featured on the homepage
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
       </div>
     </div>
@@ -488,7 +554,7 @@ export function ProductForm({
       slug: product?.slug || '',
       description: product?.description || '',
       price: product?.price || 0,
-      selling_method: (product?.sellingMethod || (product as any)?.selling_method || 'unit') as 'unit' | 'weight',
+      selling_method: (product?.sellingMethod || (product as any)?.selling_method || 'unit') as 'unit' | 'weight_custom' | 'weight_fixed',
       in_stock: product?.inStock ?? true,
       is_featured: product?.isFeatured || false,
       images: product?.images || [],

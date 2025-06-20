@@ -141,9 +141,9 @@ export default function CheckoutClientPage({ cart: initialCart, user }: { cart: 
     );
 
     if (guestCartItems.length > 0) {
-      return {
-        items: guestCartItems,
-        totalPrice: guestCartTotal,
+    return {
+      items: guestCartItems,
+      totalPrice: guestCartTotal,
         id: 'guest-cart',
       };
     }

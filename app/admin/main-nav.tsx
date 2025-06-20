@@ -21,6 +21,12 @@ export function MainNav({ className, user }: MainNavProps) {
       show: true,
     },
     {
+      href: '/admin/overview',
+      label: 'Dashboard',
+      active: pathname === '/admin' || pathname === '/admin/overview',
+      show: true,
+    },
+    {
       href: '/admin/users',
       label: 'Usuarios',
       active: pathname === '/admin/users',
@@ -50,8 +56,8 @@ export function MainNav({ className, user }: MainNavProps) {
             key={route.href}
             href={route.href}
             className={cn(
-              'text-base font-semibold transition-colors hover:text-black',
-              route.active ? 'text-black' : 'text-neutral-600'
+              'text-sm xl:text-base font-semibold transition-colors hover:text-gray-700',
+              route.active ? 'text-gray-900' : 'text-gray-600'
             )}
           >
             {route.label}

@@ -13,6 +13,12 @@ interface CartItem {
   weight_unit?: string;
   weight?: number | null;
   locked?: boolean;
+  // Additional fields for enhanced cart display
+  location_id?: string;
+  location_name?: string;
+  location_address?: string;
+  inventory_id?: string; // For weight_fixed items, this is the specific inventory unit ID
+  product_id?: string; // Original product ID for weight_fixed items that have different IDs
 }
 
 interface CartStore {
@@ -33,7 +39,7 @@ export const useCart = create<CartStore>()(
       addItem: (item) =>
         set((state) => {
           const existingItem = state.items.find((i) => i.id === item.id);
-
+          
           // If exact unit already exists and is locked, ignore duplicate
           if (existingItem && existingItem.locked) {
             return state; // no change
@@ -56,7 +62,7 @@ export const useCart = create<CartStore>()(
               }),
             };
           }
-
+          
           // Item not yet in cart
           return { items: [...state.items, item] };
         }),

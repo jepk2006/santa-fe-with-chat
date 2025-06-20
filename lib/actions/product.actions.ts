@@ -52,8 +52,8 @@ export async function getProductById(productId: string) {
   try {
     if (!productId) throw new Error('Product ID is required');
 
-    const { data, error } = await supabaseAdmin
-      .from('products')
+  const { data, error } = await supabaseAdmin
+    .from('products')
       .select(`
         *,
         product_inventory (
@@ -65,8 +65,8 @@ export async function getProductById(productId: string) {
           is_available
         )
       `)
-      .eq('id', productId)
-      .single();
+    .eq('id', productId)
+    .single();
 
     if (error) {
       console.error('Error fetching product:', error);
